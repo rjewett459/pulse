@@ -4,22 +4,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
 
-// UI components
 import Transcript from "./components/Transcript";
 import Events from "./components/Events";
 import BottomToolbar from "./components/BottomToolbar";
 
-// Types
 import { AgentConfig, SessionStatus } from "@/app/types";
-
-// Context providers & hooks
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
-
-// Utilities
 import { createRealtimeConnection } from "./lib/realtimeConnection";
-
 import { allAgentSets } from "@/app/agentConfigs";
 
 function App() {
@@ -42,8 +35,6 @@ function App() {
     if (dcRef.current && dcRef.current.readyState === "open") {
       logClientEvent(eventObj, eventNameSuffix);
       dcRef.current.send(JSON.stringify(eventObj));
-    } else {
-      logClientEvent({ attemptedEvent: eventObj.type }, "error.data_channel_not_open");
     }
   };
 
@@ -77,22 +68,16 @@ function App() {
   }, [selectedAgentConfigSet, selectedAgentName, sessionStatus]);
 
   useEffect(() => {
-    if (sessionStatus === "CONNECTED") {
-      updateSession();
-    }
+    if (sessionStatus === "CONNECTED") updateSession();
   }, [isPTTActive]);
 
   const fetchEphemeralKey = async (): Promise<string | null> => {
-    logClientEvent({ url: "/session" }, "fetch_session_token_request");
     const tokenResponse = await fetch("/api/session");
     const data = await tokenResponse.json();
-    logServerEvent(data, "fetch_session_token_response");
-
     if (!data.client_secret?.value) {
       setSessionStatus("DISCONNECTED");
       return null;
     }
-
     return data.client_secret.value;
   };
 
@@ -113,64 +98,9 @@ function App() {
       pcRef.current = pc;
       dcRef.current = dc;
 
-      dc.addEventListener("open", () => logClientEvent({}, "data_channel.open"));
-      dc.addEventListener("close", () => logClientEvent({}, "data_channel.close"));
-      dc.addEventListener("error", () => {
-  logClientEvent({}, "data_channel.error");
-});   
       dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
-
-      
-      } catch {
+    } catch {
       setSessionStatus("DISCONNECTED");
-    }
-  };
-
-
-  const sendSimulatedUserMessage = (text: string) => {
-    const id = uuidv4().slice(0, 32);
-    addTranscriptMessage(id, "user", text, true);
-    sendClientEvent({
-      type: "conversation.item.create",
-      item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] },
-    });
-    sendClientEvent({ type: "response.create" });
-  };
-
-    const updateSession = (shouldTriggerResponse = false) => {
-    sendClientEvent({ type: "input_audio_buffer.clear" });
-
-    const currentAgent = selectedAgentConfigSet?.find(a => a.name === selectedAgentName);
-
-    const turnDetection = isPTTActive
-      ? null
-      : {
-          type: "server_vad",
-          threshold: 0.5,
-          prefix_padding_ms: 300,
-          silence_duration_ms: 200,
-          create_response: true,
-        };
-
-    const tools = currentAgent?.tools || [];
-
-    const sessionUpdateEvent = {
-      type: "session.update",
-      session: {
-        modalities: ["text", "audio"],
-        instructions: `You are a warm, clear, and confident voice assistant. Speak like you're helping a close friend or sister—sincere, supportive, and helpful. Avoid robotic or whispery tones. Respond with professional ease and friendly empathy.`,
-        voice: "sage",
-        input_audio_format: "pcm16",
-        output_audio_format: "pcm16",
-        input_audio_transcription: { model: "whisper-1" },
-        turn_detection: turnDetection,
-        tools,
-      },
-    };
-
-    sendClientEvent(sessionUpdateEvent);
-    if (shouldTriggerResponse) {
-      sendSimulatedUserMessage("hi");
     }
   };
 
@@ -183,7 +113,48 @@ function App() {
     dcRef.current = null;
     setSessionStatus("DISCONNECTED");
     setIsPTTUserSpeaking(false);
-    logClientEvent({}, "disconnected");
+  };
+
+  const updateSession = (shouldTriggerResponse = false) => {
+    sendClientEvent({ type: "input_audio_buffer.clear" });
+
+    const currentAgent = selectedAgentConfigSet?.find(a => a.name === selectedAgentName);
+    const tools = currentAgent?.tools || [];
+
+    const sessionUpdateEvent = {
+      type: "session.update",
+      session: {
+        modalities: ["text", "audio"],
+        instructions: `You are a warm, clear, and confident voice assistant. Speak like you're helping a close friend or sister—sincere, supportive, and helpful.`,
+        voice: "sage",
+        input_audio_format: "pcm16",
+        output_audio_format: "pcm16",
+        input_audio_transcription: { model: "whisper-1" },
+        turn_detection: isPTTActive
+          ? null
+          : {
+              type: "server_vad",
+              threshold: 0.5,
+              prefix_padding_ms: 300,
+              silence_duration_ms: 200,
+              create_response: true,
+            },
+        tools,
+      },
+    };
+
+    sendClientEvent(sessionUpdateEvent);
+    if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
+  };
+
+  const sendSimulatedUserMessage = (text: string) => {
+    const id = uuidv4().slice(0, 32);
+    addTranscriptMessage(id, "user", text, true);
+    sendClientEvent({
+      type: "conversation.item.create",
+      item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] },
+    });
+    sendClientEvent({ type: "response.create" });
   };
 
   const onToggleConnection = () => {
@@ -195,37 +166,30 @@ function App() {
   };
 
   const handleSendTextMessage = () => {
-    const trimmedText = userText.trim();
-    if (!trimmedText) return;
-
+    const trimmed = userText.trim();
+    if (!trimmed) return;
     sendClientEvent({
       type: "conversation.item.create",
-      item: {
-        type: "message",
-        role: "user",
-        content: [{ type: "input_text", text: trimmedText }],
-      },
+      item: { type: "message", role: "user", content: [{ type: "input_text", text: trimmed }] },
     });
-
     setUserText("");
     sendClientEvent({ type: "response.create" });
   };
 
   return (
     <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
-      <div className="p-5 text-lg font-semibold flex justify-between items-center">
-        <div className="flex items-center">
-          <div onClick={() => window.location.reload()} style={{ cursor: 'pointer' }}>
-            <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} className="mr-2" />
-          </div>
+      <div className="p-4 sm:p-6 text-lg font-semibold flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div className="flex items-center gap-3">
+          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
           <div>
-            VoiceMate Pulse <span className="text-gray-500 ml-2">Live Voice Demo</span>
-            <p className="text-sm text-gray-400 -mt-1">Click the button to begin talking</p>
+            VoiceMate Pulse
+            <span className="text-gray-500 ml-2">Live Voice Demo</span>
+            <p className="text-sm text-gray-400 -mt-1">Tap the button to begin talking</p>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
+      <div className="flex flex-1 flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden relative">
         <Transcript
           userText={userText}
           setUserText={setUserText}
