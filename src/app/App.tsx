@@ -20,11 +20,10 @@ import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 // Utilities
 import { createRealtimeConnection } from "./lib/realtimeConnection";
 
-// Agent configs
-import { allAgentSets, defaultAgentSetKey } from "@/app/agentConfigs";
+import { allAgentSets } from "@/app/agentConfigs";
 
 function App() {
-  const { transcriptItems, addTranscriptMessage, addTranscriptBreadcrumb } = useTranscript();
+  const { addTranscriptMessage, addTranscriptBreadcrumb } = useTranscript();
   const { logClientEvent, logServerEvent } = useEvent();
 
   const [selectedAgentName, setSelectedAgentName] = useState<string>("");
@@ -117,7 +116,9 @@ function App() {
 
       dc.addEventListener("open", () => logClientEvent({}, "data_channel.open"));
       dc.addEventListener("close", () => logClientEvent({}, "data_channel.close"));
-      dc.addEventListener("error", err => logClientEvent({ error: err }, "data_channel.error"));
+      dc.addEventListener("error", () => {
+  logClientEvent({}, "data_channel.error");
+});   
       dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
 
       setDataChannel(dc);
@@ -180,20 +181,27 @@ function App() {
 
     sendClientEvent(sessionUpdateEvent);
 
-    if (shouldTriggerResponse) {
-      sendSimulatedUserMessage("hi");
-    }
-  };
+if (shouldTriggerResponse) {
+  sendSimulatedUserMessage("hi");
+}
+};
 
-  const handleSendTextMessage = () => {
-    if (!userText.trim()) return;
-    sendClientEvent({
-      type: "conversation.item.create",
-      item: { type: "message", role: "user", content: [{ type: "input_text", text: userText.trim() }] },
-    });
-    setUserText("");
-    sendClientEvent({ type: "response.create" });
-  };
+const handleSendTextMessage = () => {
+  const trimmedText = userText.trim();
+  if (!trimmedText) return;
+
+  sendClientEvent({
+    type: "conversation.item.create",
+    item: {
+      type: "message",
+      role: "user",
+      content: [{ type: "input_text", text: trimmedText }],
+    },
+  });
+
+  setUserText("");
+  sendClientEvent({ type: "response.create" });
+};
 
   return (
     <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
