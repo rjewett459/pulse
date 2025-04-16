@@ -2,10 +2,9 @@ import React from "react";
 import { SessionStatus } from "@/app/types";
 
 interface BottomToolbarProps {
+  // Removed isPTTActive and setIsPTTActive
   sessionStatus: SessionStatus;
   onToggleConnection: () => void;
-  isPTTActive: boolean;
-  setIsPTTActive: (val: boolean) => void;
   isPTTUserSpeaking: boolean;
   handleTalkButtonDown: () => void;
   handleTalkButtonUp: () => void;
@@ -15,11 +14,10 @@ interface BottomToolbarProps {
   setIsAudioPlaybackEnabled: (val: boolean) => void;
 }
 
+
 function BottomToolbar({
   sessionStatus,
   onToggleConnection,
-  isPTTActive,
-  setIsPTTActive,
   isPTTUserSpeaking,
   handleTalkButtonDown,
   handleTalkButtonUp,
@@ -27,7 +25,8 @@ function BottomToolbar({
   setIsEventsPaneExpanded,
   isAudioPlaybackEnabled,
   setIsAudioPlaybackEnabled,
-}: BottomToolbarProps) {
+}: BottomToolbarProps)
+
   const isConnected = sessionStatus === "CONNECTED";
   const isConnecting = sessionStatus === "CONNECTING";
 
