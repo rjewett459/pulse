@@ -120,7 +120,7 @@ function App() {
 });   
       dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
 
-      setDataChannel(dc);
+      
       } catch {
       setSessionStatus("DISCONNECTED");
     }
