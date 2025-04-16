@@ -216,18 +216,16 @@ function App() {
         </div>
 
         <BottomToolbar
-          sessionStatus={sessionStatus}
-          onToggleConnection={onToggleConnection}
-          isPTTActive={isPTTActive}
-          setIsPTTActive={setIsPTTActive}
-          isPTTUserSpeaking={isPTTUserSpeaking}
-          handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-          handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-          isEventsPaneExpanded={isEventsPaneExpanded}
-          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-        />
+  sessionStatus={sessionStatus}
+  onToggleConnection={onToggleConnection}
+  isPTTUserSpeaking={isPTTUserSpeaking}
+  handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+  handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+  isEventsPaneExpanded={isEventsPaneExpanded}
+  setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+  isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+  setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+/>
       </div>
     </>
   );
