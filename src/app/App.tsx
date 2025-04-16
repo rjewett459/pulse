@@ -137,7 +137,7 @@ function App() {
     sendClientEvent({ type: "response.create" });
   };
 
-  const updateSession = (shouldTriggerResponse = false) => {
+    const updateSession = (shouldTriggerResponse = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
 
     const currentAgent = selectedAgentConfigSet?.find(a => a.name === selectedAgentName);
@@ -169,36 +169,47 @@ function App() {
     };
 
     sendClientEvent(sessionUpdateEvent);
+    if (shouldTriggerResponse) {
+      sendSimulatedUserMessage("hi");
+    }
+  };
 
-if (shouldTriggerResponse) {
-  sendSimulatedUserMessage("hi");
-}
-};
+  const disconnectFromRealtime = () => {
+    if (pcRef.current) {
+      pcRef.current.getSenders().forEach(sender => sender.track?.stop());
+      pcRef.current.close();
+      pcRef.current = null;
+    }
+    dcRef.current = null;
+    setSessionStatus("DISCONNECTED");
+    setIsPTTUserSpeaking(false);
+    logClientEvent({}, "disconnected");
+  };
 
-const onToggleConnection = () => {
-  if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
-    disconnectFromRealtime();
-  } else {
-    connectToRealtime();
-  }
-};
+  const onToggleConnection = () => {
+    if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
+      disconnectFromRealtime();
+    } else {
+      connectToRealtime();
+    }
+  };
 
-const handleSendTextMessage = () => {
-  const trimmedText = userText.trim();
-  if (!trimmedText) return;
+  const handleSendTextMessage = () => {
+    const trimmedText = userText.trim();
+    if (!trimmedText) return;
 
-  sendClientEvent({
-    type: "conversation.item.create",
-    item: {
-      type: "message",
-      role: "user",
-      content: [{ type: "input_text", text: trimmedText }],
-    },
-  });
+    sendClientEvent({
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "user",
+        content: [{ type: "input_text", text: trimmedText }],
+      },
+    });
 
-  setUserText("");
-  sendClientEvent({ type: "response.create" });
-};
+    setUserText("");
+    sendClientEvent({ type: "response.create" });
+  };
 
   return (
     <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
@@ -225,20 +236,19 @@ const handleSendTextMessage = () => {
       </div>
 
       <BottomToolbar
-  sessionStatus={sessionStatus}
-  onToggleConnection={onToggleConnection}
-  isPTTActive={isPTTActive}
-  setIsPTTActive={setIsPTTActive}
-  isPTTUserSpeaking={isPTTUserSpeaking}
-  handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-  handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-  isEventsPaneExpanded={isEventsPaneExpanded}
-  setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-  isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-  setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-/>
-</div>
-
+        sessionStatus={sessionStatus}
+        onToggleConnection={onToggleConnection}
+        isPTTActive={isPTTActive}
+        setIsPTTActive={setIsPTTActive}
+        isPTTUserSpeaking={isPTTUserSpeaking}
+        handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+        handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+        isEventsPaneExpanded={isEventsPaneExpanded}
+        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+      />
+    </div>
   );
 }
 
