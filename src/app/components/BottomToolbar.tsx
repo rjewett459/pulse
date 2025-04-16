@@ -26,8 +26,7 @@ function BottomToolbar({
   isAudioPlaybackEnabled,
   setIsAudioPlaybackEnabled,
 }: BottomToolbarProps) {
-  const isConnected = sessionStatus === "CONNECTED";
-  const isConnecting = sessionStatus === "CONNECTING";
+
 
 
 
