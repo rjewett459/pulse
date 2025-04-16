@@ -242,7 +242,7 @@ function App() {
           create_response: true,
         };
 
-    const instructions = currentAgent?.instructions || "";
+   
     const tools = currentAgent?.tools || [];
 
     const sessionUpdateEvent = {
