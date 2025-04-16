@@ -29,19 +29,7 @@ function BottomToolbar({
   const isConnected = sessionStatus === "CONNECTED";
   const isConnecting = sessionStatus === "CONNECTING";
 
-  function getConnectionButtonLabel() {
-  if (isConnected) return "Disconnect";
-  if (isConnecting) return "Connecting...";
-  return "Connect";
-}
 
-function getConnectionButtonClasses() {
-  const baseClasses = "text-white text-sm px-4 py-2 rounded-full w-full sm:w-36";
-  const cursorClass = isConnecting ? "cursor-not-allowed" : "cursor-pointer";
-  return isConnected
-    ? `bg-red-600 hover:bg-red-700 ${cursorClass} ${baseClasses}`
-    : `bg-black hover:bg-gray-900 ${cursorClass} ${baseClasses}`;
-}
 
 
   return (
