@@ -25,7 +25,7 @@ function App() {
   const dcRef = useRef<RTCDataChannel | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>("DISCONNECTED");
-  const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false);
+  const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false); // Logs default to hidden
   const [userText, setUserText] = useState<string>("");
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
@@ -65,7 +65,6 @@ function App() {
       updateSession(true);
     }
   }, [selectedAgentConfigSet, selectedAgentName, sessionStatus]);
-
 
   const fetchEphemeralKey = async (): Promise<string | null> => {
     const tokenResponse = await fetch("/api/session");
@@ -114,37 +113,24 @@ function App() {
   const updateSession = (shouldTriggerResponse = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
 
-    const currentAgent = selectedAgentConfigSet?.find(a => a.name === selectedAgentName);
-    const tools = currentAgent?.tools || [];
-
-    const updateSession = (shouldTriggerResponse = false) => {
-  sendClientEvent({ type: "input_audio_buffer.clear" });
-
-  const currentAgent = selectedAgentConfigSet?.find(a => a.name === selectedAgentName);
-
-  const sessionUpdateEvent = {
-    type: "session.update",
-    session: {
-      modalities: ["text", "audio"],
-      instructions: `You are a warm, clear, and confident voice assistant. Speak like you're helping a close friend or sister—sincere, supportive, and helpful.`,
-      voice: "sage",
-      input_audio_format: "pcm16",
-      output_audio_format: "pcm16",
-      input_audio_transcription: { model: "whisper-1" },
-      turn_detection: {
-        type: "server_vad",
-        threshold: 0.5,
-        prefix_padding_ms: 300,
-        silence_duration_ms: 200,
-        create_response: true,
+    const sessionUpdateEvent = {
+      type: "session.update",
+      session: {
+        modalities: ["text", "audio"],
+        instructions: `You are a warm, clear, and confident voice assistant. Speak like you're helping a close friend or sister—sincere, supportive, and helpful.`,
+        voice: "sage",
+        input_audio_format: "pcm16",
+        output_audio_format: "pcm16",
+        input_audio_transcription: { model: "whisper-1" },
+        turn_detection: {
+          type: "server_vad",
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 200,
+          create_response: true,
+        },
       },
-    },
-  };
-
-  sendClientEvent(sessionUpdateEvent);
-  if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
-};
-
+    };
 
     sendClientEvent(sessionUpdateEvent);
     if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
@@ -179,13 +165,11 @@ function App() {
     sendClientEvent({ type: "response.create" });
   };
 
-
-
   return (
     <>
-<div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-  <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
-</div>
+      <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+        <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+      </div>
 
       {/* Toggle to show logs on mobile */}
       <div className="absolute top-4 right-4 z-50 md:hidden">
@@ -219,20 +203,19 @@ function App() {
         </div>
 
         <BottomToolbar
-  sessionStatus={sessionStatus}
-  onToggleConnection={onToggleConnection}
-  isPTTUserSpeaking={isPTTUserSpeaking}
-  handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-  handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-  isEventsPaneExpanded={isEventsPaneExpanded}
-  setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-  isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-  setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-/>
+          sessionStatus={sessionStatus}
+          onToggleConnection={onToggleConnection}
+          isPTTUserSpeaking={isPTTUserSpeaking}
+          handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+          handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+          isEventsPaneExpanded={isEventsPaneExpanded}
+          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+        />
       </div>
     </>
   );
 }
-
 
 export default App;
