@@ -167,20 +167,24 @@ function App() {
 
   return (
     <>
-      <div className="flex items-center gap-3 px-4 pt-4 sm:pt-6">
+     <div className="flex items-center gap-3 px-4 pt-4 sm:pt-6">
   <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
     <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
   </div>
-  <div className="flex flex-col">
+  <div className="flex flex-col text-center sm:text-left">
     <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
       VoiceMate Pulse
     </h1>
-    <p className="text-xs sm:text-sm text-gray-500 -mt-0.5">
-      Live Voice Demo – Tap Connect 👇🏼 to Begin</p>
-   <p className="text-sm text-gray-400 -mt-1">Enjoy a couple of minutes on us!</p>
-   <div className="h-2" /> {/* Adds spacing under subtitle */}
+    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+      Live Voice Demo – Tap Connect 👇🏼 to Begin
+    </p>
+    <p className="text-sm text-gray-400 mt-0.5">
+      Enjoy a couple of minutes on us!
+    </p>
+    <div className="h-2" /> {/* Spacer below subtitle block */}
   </div>
 </div>
+
 
 
       {/* Toggle to show logs on mobile */}
@@ -196,7 +200,7 @@ function App() {
       </div>
 
       <div className="text-base flex flex-col min-h-screen bg-gray-100 text-gray-800 relative">
-        <div className="flex flex-1 flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-y-auto">
+        <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-y-auto">
           <Transcript
             userText={userText}
             setUserText={setUserText}
