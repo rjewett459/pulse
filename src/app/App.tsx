@@ -165,71 +165,58 @@ function App() {
     sendClientEvent({ type: "response.create" });
   };
 
-  return (
-    <>
-     <div className="flex items-center gap-3 px-4 pt-4 sm:pt-6">
-  <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-    <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+<div className="flex flex-col h-screen bg-gray-100 text-gray-800">
+  {/* Header Section */}
+  <div className="flex items-center gap-3 px-4 pt-4 sm:pt-6">
+    <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+      <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+    </div>
+    <div className="flex flex-col text-center sm:text-left">
+      <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
+        VoiceMate Pulse
+      </h1>
+      <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+        Live Voice Demo – Tap Connect 👇🏼 to Begin
+      </p>
+      <p className="text-sm text-gray-400 mt-0.5">
+        Enjoy a couple of minutes on us!
+      </p>
+      <div className="h-2" />
+    </div>
   </div>
-  <div className="flex flex-col text-center sm:text-left">
-    <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
-      VoiceMate Pulse
-    </h1>
-    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-      Live Voice Demo – Tap Connect 👇🏼 to Begin
-    </p>
-    <p className="text-sm text-gray-400 mt-0.5">
-      Enjoy a couple of minutes on us!
-    </p>
-    <div className="h-2" /> {/* Spacer below subtitle block */}
+
+  {/* Transcript & Logs */}
+  <div className="flex-1 overflow-y-auto px-2 sm:px-4 relative">
+    <Transcript
+      userText={userText}
+      setUserText={setUserText}
+      onSendMessage={handleSendTextMessage}
+      canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+    />
+    {/* Logs slide-in pane */}
+    <div
+      className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
+        isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+      } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+    >
+      <Events isExpanded={isEventsPaneExpanded} />
+    </div>
   </div>
+
+  {/* Bottom Toolbar - Always Visible */}
+  <BottomToolbar
+    sessionStatus={sessionStatus}
+    onToggleConnection={onToggleConnection}
+    isPTTUserSpeaking={isPTTUserSpeaking}
+    handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+    handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+    isEventsPaneExpanded={isEventsPaneExpanded}
+    setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+    isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+    setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+  />
 </div>
 
-
-
-      {/* Toggle to show logs on mobile */}
-      <div className="absolute top-4 right-4 z-50 md:hidden">
-        <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-          <input
-            type="checkbox"
-            checked={isEventsPaneExpanded}
-            onChange={(e) => setIsEventsPaneExpanded(e.target.checked)}
-          />
-          Show Logs
-        </label>
-      </div>
-
-      <div className="text-base flex flex-col min-h-screen bg-gray-100 text-gray-800 relative">
-        <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-y-auto">
-          <Transcript
-            userText={userText}
-            setUserText={setUserText}
-            onSendMessage={handleSendTextMessage}
-            canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-          />
-
-          {/* Slide-in logs on mobile */}
-          <div
-            className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
-              isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-            } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
-          >
-            <Events isExpanded={isEventsPaneExpanded} />
-          </div>
-        </div>
-
-        <BottomToolbar
-          sessionStatus={sessionStatus}
-          onToggleConnection={onToggleConnection}
-          isPTTUserSpeaking={isPTTUserSpeaking}
-          handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-          handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-          isEventsPaneExpanded={isEventsPaneExpanded}
-          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-        />
-      </div>
     </>
   );
 }
