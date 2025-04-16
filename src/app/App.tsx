@@ -121,27 +121,36 @@ function App() {
     const currentAgent = selectedAgentConfigSet?.find(a => a.name === selectedAgentName);
     const tools = currentAgent?.tools || [];
 
-    const sessionUpdateEvent = {
-      type: "session.update",
-      session: {
-        modalities: ["text", "audio"],
-        instructions: `You are a warm, clear, and confident voice assistant. Speak like you're helping a close friend or sister—sincere, supportive, and helpful.`,
-        voice: "sage",
-        input_audio_format: "pcm16",
-        output_audio_format: "pcm16",
-        input_audio_transcription: { model: "whisper-1" },
-        turn_detection: isPTTActive
-          ? null
-          : {
-              type: "server_vad",
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 200,
-              create_response: true,
-            },
-        tools,
+    const updateSession = (shouldTriggerResponse = false) => {
+  sendClientEvent({ type: "input_audio_buffer.clear" });
+
+  const currentAgent = selectedAgentConfigSet?.find(a => a.name === selectedAgentName);
+  const tools = currentAgent?.tools || [];
+
+  const sessionUpdateEvent = {
+    type: "session.update",
+    session: {
+      modalities: ["text", "audio"],
+      instructions: `You are a warm, clear, and confident voice assistant. Speak like you're helping a close friend or sister—sincere, supportive, and helpful.`,
+      voice: "sage",
+      input_audio_format: "pcm16",
+      output_audio_format: "pcm16",
+      input_audio_transcription: { model: "whisper-1" },
+      turn_detection: {
+        type: "server_vad",
+        threshold: 0.5,
+        prefix_padding_ms: 300,
+        silence_duration_ms: 200,
+        create_response: true,
       },
-    };
+      tools,
+    },
+  };
+
+  sendClientEvent(sessionUpdateEvent);
+  if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
+};
+
 
     sendClientEvent(sessionUpdateEvent);
     if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
