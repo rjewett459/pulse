@@ -17,7 +17,7 @@ import { allAgentSets } from "@/app/agentConfigs";
 
 function App() {
   const { addTranscriptMessage, addTranscriptBreadcrumb } = useTranscript();
-  const { logClientEvent, logServerEvent } = useEvent();
+  const { logClientEvent } = useEvent();
 
   const [selectedAgentName, setSelectedAgentName] = useState<string>("");
   const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
