@@ -176,21 +176,21 @@ function App() {
     sendClientEvent({ type: "response.create" });
   };
 
-  return (
+return (
+  <>
     {/* Toggle to show logs */}
-<div className="absolute top-4 right-4 z-50 md:hidden">
-  <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-    <input
-      type="checkbox"
-      checked={isEventsPaneExpanded}
-      onChange={() => setIsEventsPaneExpanded((prev) => !prev)}
-      className="w-4 h-4"
-    />
-    Show Logs
-  </label>
-</div>
+    <div className="absolute top-4 right-4 z-50 md:hidden">
+      <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+        <input
+          type="checkbox"
+          checked={isEventsPaneExpanded}
+          onChange={(e) => setIsEventsPaneExpanded(e.target.checked)}
+        />
+        Show Logs
+      </label>
+    </div>
 
-<div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
+    <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
   <Transcript
     userText={userText}
     setUserText={setUserText}
