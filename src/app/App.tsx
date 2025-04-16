@@ -66,10 +66,6 @@ function App() {
     }
   }, [selectedAgentConfigSet, selectedAgentName, sessionStatus]);
 
-  useEffect(() => {
-  if (sessionStatus === "CONNECTED") updateSession();
-}, [sessionStatus]); // ✅ no isPTTActive
-
 
   const fetchEphemeralKey = async (): Promise<string | null> => {
     const tokenResponse = await fetch("/api/session");
@@ -125,7 +121,6 @@ function App() {
   sendClientEvent({ type: "input_audio_buffer.clear" });
 
   const currentAgent = selectedAgentConfigSet?.find(a => a.name === selectedAgentName);
-  const tools = currentAgent?.tools || [];
 
   const sessionUpdateEvent = {
     type: "session.update",
@@ -143,7 +138,6 @@ function App() {
         silence_duration_ms: 200,
         create_response: true,
       },
-      tools,
     },
   };
 
