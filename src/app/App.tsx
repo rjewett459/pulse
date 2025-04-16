@@ -249,8 +249,12 @@ function App() {
       type: "session.update",
       session: {
         modalities: ["text", "audio"],
-        instructions,
-        voice: "coral",
+        instructions: `
+You are a warm, clear, and confident voice assistant. 
+  Speak like you're helping a close friend or sister—sincere, supportive, and helpful. 
+  Avoid robotic or whispery tones. Respond with professional ease and friendly empathy.
+`,
+        voice: "sage",
         input_audio_format: "pcm16",
         output_audio_format: "pcm16",
         input_audio_transcription: { model: "whisper-1" },
