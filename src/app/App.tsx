@@ -67,8 +67,9 @@ function App() {
   }, [selectedAgentConfigSet, selectedAgentName, sessionStatus]);
 
   useEffect(() => {
-    if (sessionStatus === "CONNECTED") updateSession();
-  }, [isPTTActive]);
+  if (sessionStatus === "CONNECTED") updateSession();
+}, [sessionStatus]); // ✅ no isPTTActive
+
 
   const fetchEphemeralKey = async (): Promise<string | null> => {
     const tokenResponse = await fetch("/api/session");
