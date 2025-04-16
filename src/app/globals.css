@@ -65,3 +65,9 @@ audio {
 * {
   box-sizing: border-box;
 }
+
+
+* {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}

@@ -177,17 +177,37 @@ function App() {
   };
 
   return (
-    <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
-      <div className="p-4 sm:p-6 text-lg font-semibold flex flex-col sm:flex-row justify-between items-center gap-3">
-        <div className="flex items-center gap-3">
-          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
-          <div>
-            VoiceMate Pulse
-            <span className="text-gray-500 ml-2">Live Voice Demo</span>
-            <p className="text-sm text-gray-400 -mt-1">Tap the button to begin talking</p>
-          </div>
-        </div>
-      </div>
+    {/* Toggle to show logs */}
+<div className="absolute top-4 right-4 z-50 md:hidden">
+  <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+    <input
+      type="checkbox"
+      checked={isEventsPaneExpanded}
+      onChange={() => setIsEventsPaneExpanded((prev) => !prev)}
+      className="w-4 h-4"
+    />
+    Show Logs
+  </label>
+</div>
+
+<div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
+  <Transcript
+    userText={userText}
+    setUserText={setUserText}
+    onSendMessage={handleSendTextMessage}
+    canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+  />
+
+  {/* Slide-in logs */}
+  <div
+    className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
+      isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+    } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+  >
+    <Events isExpanded={isEventsPaneExpanded} />
+  </div>
+</div>
+
 
       <div className="flex flex-1 flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden relative">
         <Transcript
