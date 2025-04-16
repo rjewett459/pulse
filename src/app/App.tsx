@@ -175,6 +175,14 @@ if (shouldTriggerResponse) {
 }
 };
 
+const onToggleConnection = () => {
+  if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
+    disconnectFromRealtime();
+  } else {
+    connectToRealtime();
+  }
+};
+
 const handleSendTextMessage = () => {
   const trimmedText = userText.trim();
   if (!trimmedText) return;
