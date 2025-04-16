@@ -409,15 +409,15 @@ function App() {
         <div className="flex items-center">
           <div onClick={() => window.location.reload()} style={{ cursor: 'pointer' }}>
             <Image
-              src="/openai-logomark.svg"
-              alt="OpenAI Logo"
-              width={20}
-              height={20}
+              src="/voicemate.svg"
+              alt="VoiceMate Logo"
+              width={40}
+              height={40}
               className="mr-2"
             />
           </div>
           <div>
-            Realtime API <span className="text-gray-500">Agents</span>
+            VoiceMate Pulse<span className="text-gray-500">   Generator</span>
           </div>
         </div>
         <div className="flex items-center">
