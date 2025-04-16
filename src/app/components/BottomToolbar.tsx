@@ -46,72 +46,47 @@ function BottomToolbar({
   }
 
   return (
-    <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 sm:gap-x-6">
-      <button
-        onClick={onToggleConnection}
-        className={getConnectionButtonClasses()}
-        disabled={isConnecting}
-      >
-        {getConnectionButtonLabel()}
-      </button>
+    <div className="flex justify-between items-center w-full px-4 py-3 bg-white border-t border-gray-300 text-sm sm:text-base">
+  <button
+    onClick={onToggleConnection}
+    className={`px-4 py-2 rounded-full font-semibold text-white ${
+      sessionStatus === "CONNECTED" ? "bg-red-600" : "bg-green-600"
+    }`}
+  >
+    {sessionStatus === "CONNECTED" ? "Disconnect" : "Connect"}
+  </button>
 
-      <div className="flex items-center gap-2">
-        <input
-          id="ptt"
-          type="checkbox"
-          checked={isPTTActive}
-          onChange={e => setIsPTTActive(e.target.checked)}
-          disabled={!isConnected}
-          className="w-4 h-4"
-        />
-        <label htmlFor="ptt" className="text-sm">
-          Push to Talk
-        </label>
-        <button
-          onMouseDown={handleTalkButtonDown}
-          onMouseUp={handleTalkButtonUp}
-          onTouchStart={handleTalkButtonDown}
-          onTouchEnd={handleTalkButtonUp}
-          disabled={!isPTTActive}
-          className={`text-sm px-3 py-1 rounded-full ${
-            isPTTActive
-              ? isPTTUserSpeaking
-                ? "bg-gray-300"
-                : "bg-gray-200"
-              : "bg-gray-100 text-gray-400"
-          }`}
-        >
-          Talk
-        </button>
-      </div>
+  <div className="flex gap-2 items-center">
+    <button
+      onMouseDown={handleTalkButtonDown}
+      onMouseUp={handleTalkButtonUp}
+      className={`px-4 py-1 rounded-full ${
+        isPTTUserSpeaking ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-800"
+      }`}
+    >
+      🎙️ Talk
+    </button>
 
-      <div className="flex items-center gap-2">
-        <input
-          id="playback"
-          type="checkbox"
-          checked={isAudioPlaybackEnabled}
-          onChange={e => setIsAudioPlaybackEnabled(e.target.checked)}
-          disabled={!isConnected}
-          className="w-4 h-4"
-        />
-        <label htmlFor="playback" className="text-sm">
-          Playback
-        </label>
-      </div>
+    <button
+      onClick={() => setIsAudioPlaybackEnabled(!isAudioPlaybackEnabled)}
+      className={`px-4 py-1 rounded-full ${
+        isAudioPlaybackEnabled ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-800"
+      }`}
+    >
+      🔊 {isAudioPlaybackEnabled ? "On" : "Off"}
+    </button>
 
-      <div className="flex items-center gap-2 ml-auto sm:ml-0">
-        <input
-          id="logs"
-          type="checkbox"
-          checked={isEventsPaneExpanded}
-          onChange={e => setIsEventsPaneExpanded(e.target.checked)}
-          className="w-4 h-4"
-        />
-        <label htmlFor="logs" className="text-sm">
-          Logs
-        </label>
-      </div>
-    </div>
+    <button
+      onClick={() => setIsEventsPaneExpanded(!isEventsPaneExpanded)}
+      className={`px-4 py-1 rounded-full ${
+        isEventsPaneExpanded ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-800"
+      }`}
+    >
+      📋 Logs
+    </button>
+  </div>
+</div>
+
   );
 }
 
