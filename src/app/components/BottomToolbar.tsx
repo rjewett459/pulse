@@ -1,8 +1,7 @@
-import React from "react";
+\import React from "react";
 import { SessionStatus } from "@/app/types";
 
 interface BottomToolbarProps {
-  // Removed isPTTActive and setIsPTTActive
   sessionStatus: SessionStatus;
   onToggleConnection: () => void;
   isPTTUserSpeaking: boolean;
@@ -13,7 +12,6 @@ interface BottomToolbarProps {
   isAudioPlaybackEnabled: boolean;
   setIsAudioPlaybackEnabled: (val: boolean) => void;
 }
-
 
 function BottomToolbar({
   sessionStatus,
@@ -26,11 +24,6 @@ function BottomToolbar({
   isAudioPlaybackEnabled,
   setIsAudioPlaybackEnabled,
 }: BottomToolbarProps) {
-
-
-
-
-
   return (
     <div className="flex justify-between items-center w-full px-4 py-3 bg-white border-t border-gray-300 text-sm sm:text-base">
       <button
