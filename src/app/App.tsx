@@ -217,19 +217,20 @@ const handleSendTextMessage = () => {
       </div>
 
       <BottomToolbar
-        sessionStatus={sessionStatus}
-        onToggleConnection={connectToRealtime}
-        isPTTActive={isPTTActive}
-        setIsPTTActive={setIsPTTActive}
-        isPTTUserSpeaking={isPTTUserSpeaking}
-        handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-        handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-        isEventsPaneExpanded={isEventsPaneExpanded}
-        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-      />
-    </div>
+  sessionStatus={sessionStatus}
+  onToggleConnection={onToggleConnection}
+  isPTTActive={isPTTActive}
+  setIsPTTActive={setIsPTTActive}
+  isPTTUserSpeaking={isPTTUserSpeaking}
+  handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+  handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+  isEventsPaneExpanded={isEventsPaneExpanded}
+  setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+  isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+  setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+/>
+</div>
+
   );
 }
 
