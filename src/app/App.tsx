@@ -204,7 +204,7 @@ function App() {
         </div>
       </div>
 
-      <BottomToolbar
+            <BottomToolbar
         sessionStatus={sessionStatus}
         onToggleConnection={onToggleConnection}
         isPTTUserSpeaking={isPTTUserSpeaking}
@@ -217,6 +217,8 @@ function App() {
       />
     </div>
   </>
-);
+  ); // 👈 closing return block
+} // 👈 closing App function
 
 export default App;
+
