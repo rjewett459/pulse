@@ -165,58 +165,92 @@ function App() {
     sendClientEvent({ type: "response.create" });
   };
 
-<div className="flex flex-col h-screen bg-gray-100 text-gray-800">
-  {/* Header Section */}
-  <div className="flex items-center gap-3 px-4 pt-4 sm:pt-6">
-    <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-      <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
-    </div>
-    <div className="flex flex-col text-center sm:text-left">
-      <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
-        VoiceMate Pulse
-      </h1>
-      <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-        Live Voice Demo – Tap Connect 👇🏼 to Begin
-      </p>
-      <p className="text-sm text-gray-400 mt-0.5">
-        Enjoy a couple of minutes on us!
-      </p>
-      <div className="h-2" />
-    </div>
+  return (
+    <>
+     <div className="flex items-center gap-3 px-4 pt-4 sm:pt-6">
+  <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+    <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
   </div>
-
-  {/* Transcript & Logs */}
-  <div className="flex-1 overflow-y-auto px-2 sm:px-4 relative">
-    <Transcript
-      userText={userText}
-      setUserText={setUserText}
-      onSendMessage={handleSendTextMessage}
-      canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-    />
-    {/* Logs slide-in pane */}
-    <div
-      className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
-        isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-      } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
-    >
-      <Events isExpanded={isEventsPaneExpanded} />
-    </div>
+  <div className="flex flex-col text-center sm:text-left">
+    <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
+      VoiceMate Pulse
+    </h1>
+    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+      Live Voice Demo – Tap Connect 👇🏼 to Begin
+    </p>
+    <p className="text-sm text-gray-400 mt-0.5">
+      Enjoy a couple of minutes on us!
+    </p>
+    <div className="h-2" /> {/* Spacer below subtitle block */}
   </div>
+</div>==> Cloning from https://github.com/rjewett459/pulse
+==> Checking out commit a3c0aef3a65b33f80a7f588c86e62e32efaa8004 in branch main
+==> Using Node.js version 22.14.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Using Bun version 1.1.0 (default)
+==> Docs on specifying a bun version: https://render.com/docs/bun-version
+==> Running build command 'npm install && npm run build'...
+added 478 packages, and audited 479 packages in 11s
+212 packages are looking for funding
+  run `npm fund` for details
+found 0 vulnerabilities
+> realtime-examples@0.1.0 build
+> next build
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+   ▲ Next.js 15.3.0
+   Creating an optimized production build ...
+Failed to compile.
+./src/app/App.tsx
+Error:   x Unexpected token `div`. Expected jsx identifier
+     ,-[/opt/render/project/src/src/app/App.tsx:168:1]
+ 165 |     sendClientEvent({ type: "response.create" });
+ 166 |   };
+ 167 | 
+ 168 | <div className="flex flex-col h-screen bg-gray-100 text-gray-800">
+     :  ^^^
+ 169 |   {/* Header Section */}
+ 170 |   <div className="flex items-center gap-3 px-4 pt-4 sm:pt-6">
+ 171 |     <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+     `----
+Caused by:
+    Syntax Error
+Import trace for requested module:
+./src/app/App.tsx
+./src/app/page.tsx
+> Build failed because of webpack errors
+==> Build failed 😞
 
-  {/* Bottom Toolbar - Always Visible */}
-  <BottomToolbar
-    sessionStatus={sessionStatus}
-    onToggleConnection={onToggleConnection}
-    isPTTUserSpeaking={isPTTUserSpeaking}
-    handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-    handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-    isEventsPaneExpanded={isEventsPaneExpanded}
-    setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-    isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-    setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-  />
-</div>
+      <div className="text-base flex flex-col min-h-screen bg-gray-100 text-gray-800 relative">
+        <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-y-auto">
+          <Transcript
+            userText={userText}
+            setUserText={setUserText}
+            onSendMessage={handleSendTextMessage}
+            canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+          />
 
+          {/* Slide-in logs on mobile */}
+          <div
+            className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
+              isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+            } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+          >
+            <Events isExpanded={isEventsPaneExpanded} />
+          </div>
+        </div>
+
+        <BottomToolbar
+          sessionStatus={sessionStatus}
+          onToggleConnection={onToggleConnection}
+          isPTTUserSpeaking={isPTTUserSpeaking}
+          handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+          handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+          isEventsPaneExpanded={isEventsPaneExpanded}
+          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+        />
+      </div>
     </>
   );
 }
