@@ -167,9 +167,20 @@ function App() {
 
   return (
     <>
-      <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-        <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
-      </div>
+      <div className="flex items-center gap-3 px-4 pt-4 sm:pt-6">
+  <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+    <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+  </div>
+  <div className="flex flex-col">
+    <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
+      VoiceMate Pulse
+    </h1>
+    <p className="text-xs sm:text-sm text-gray-500 -mt-0.5">
+      Live Voice Demo – Tap Connect 👇🏼 to Begin
+    </p>
+  </div>
+</div>
+
 
       {/* Toggle to show logs on mobile */}
       <div className="absolute top-4 right-4 z-50 md:hidden">
