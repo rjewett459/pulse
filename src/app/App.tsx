@@ -180,6 +180,10 @@ function App() {
 
   return (
     <>
+<div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+  <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+</div>
+
       {/* Toggle to show logs on mobile */}
       <div className="absolute top-4 right-4 z-50 md:hidden">
         <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
