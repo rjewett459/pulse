@@ -178,7 +178,7 @@ function App() {
 
 return (
   <>
-    {/* Toggle to show logs */}
+    {/* Toggle to show logs on mobile */}
     <div className="absolute top-4 right-4 z-50 md:hidden">
       <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
         <input
@@ -191,24 +191,6 @@ return (
     </div>
 
     <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
-  <Transcript
-    userText={userText}
-    setUserText={setUserText}
-    onSendMessage={handleSendTextMessage}
-    canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-  />
-
-  {/* Slide-in logs */}
-  <div
-    className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
-      isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-    } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
-  >
-    <Events isExpanded={isEventsPaneExpanded} />
-  </div>
-</div>
-
-
       <div className="flex flex-1 flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden relative">
         <Transcript
           userText={userText}
@@ -216,7 +198,15 @@ return (
           onSendMessage={handleSendTextMessage}
           canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
         />
-        <Events isExpanded={isEventsPaneExpanded} />
+
+        {/* Slide-in logs on mobile */}
+        <div
+          className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
+            isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+          } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+        >
+          <Events isExpanded={isEventsPaneExpanded} />
+        </div>
       </div>
 
       <BottomToolbar
@@ -233,7 +223,5 @@ return (
         setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
       />
     </div>
-  );
-}
-
-export default App;
+  </>
+);
