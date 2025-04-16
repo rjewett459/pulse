@@ -28,7 +28,6 @@ function App() {
 
   const [selectedAgentName, setSelectedAgentName] = useState<string>("");
   const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
-  const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -122,21 +121,11 @@ function App() {
       dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
 
       setDataChannel(dc);
-    } catch (err) {
+      } catch {
       setSessionStatus("DISCONNECTED");
     }
   };
 
-  const disconnectFromRealtime = () => {
-    if (pcRef.current) {
-      pcRef.current.getSenders().forEach(sender => sender.track?.stop());
-      pcRef.current.close();
-      pcRef.current = null;
-    }
-    setDataChannel(null);
-    setSessionStatus("DISCONNECTED");
-    setIsPTTUserSpeaking(false);
-  };
 
   const sendSimulatedUserMessage = (text: string) => {
     const id = uuidv4().slice(0, 32);
