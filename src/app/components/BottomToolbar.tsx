@@ -25,49 +25,50 @@ function BottomToolbar({
   setIsAudioPlaybackEnabled,
 }: BottomToolbarProps) {
   return (
-    <div className="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-gray-300 text-sm sm:text-base sm:static sm:border-none sm:z-auto px-4 py-3">
-      <div className="flex justify-between items-center w-full">
+  <div className="w-full border-t border-gray-300 bg-white px-4 py-3">
+    <div className="flex justify-between items-center w-full text-sm sm:text-base">
+      <button
+        onClick={onToggleConnection}
+        className={`px-4 py-2 rounded-full font-semibold text-white ${
+          sessionStatus === "CONNECTED" ? "bg-red-600" : "bg-green-600"
+        }`}
+      >
+        {sessionStatus === "CONNECTED" ? "Disconnect" : "Connect"}
+      </button>
+
+      <div className="flex gap-2 items-center">
         <button
-          onClick={onToggleConnection}
-          className={`px-4 py-2 rounded-full font-semibold text-white ${
-            sessionStatus === "CONNECTED" ? "bg-red-600" : "bg-green-600"
+          onMouseDown={handleTalkButtonDown}
+          onMouseUp={handleTalkButtonUp}
+          className={`px-4 py-1 rounded-full ${
+            isPTTUserSpeaking ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-800"
           }`}
         >
-          {sessionStatus === "CONNECTED" ? "Disconnect" : "Connect"}
+          🎙️ Talk
         </button>
 
-        <div className="flex gap-2 items-center">
-          <button
-            onMouseDown={handleTalkButtonDown}
-            onMouseUp={handleTalkButtonUp}
-            className={`px-4 py-1 rounded-full ${
-              isPTTUserSpeaking ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-800"
-            }`}
-          >
-            🎙️ Talk
-          </button>
+        <button
+          onClick={() => setIsAudioPlaybackEnabled(!isAudioPlaybackEnabled)}
+          className={`px-4 py-1 rounded-full ${
+            isAudioPlaybackEnabled ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-800"
+          }`}
+        >
+          🔊 {isAudioPlaybackEnabled ? "On" : "Off"}
+        </button>
 
-          <button
-            onClick={() => setIsAudioPlaybackEnabled(!isAudioPlaybackEnabled)}
-            className={`px-4 py-1 rounded-full ${
-              isAudioPlaybackEnabled ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-800"
-            }`}
-          >
-            🔊 {isAudioPlaybackEnabled ? "On" : "Off"}
-          </button>
-
-          <button
-            onClick={() => setIsEventsPaneExpanded(!isEventsPaneExpanded)}
-            className={`px-4 py-1 rounded-full ${
-              isEventsPaneExpanded ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-800"
-            }`}
-          >
-            📋 Logs
-          </button>
-        </div>
+        <button
+          onClick={() => setIsEventsPaneExpanded(!isEventsPaneExpanded)}
+          className={`px-4 py-1 rounded-full ${
+            isEventsPaneExpanded ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-800"
+          }`}
+        >
+          📋 Logs
+        </button>
       </div>
     </div>
-  );
+  </div>
+);
+
 }
 
 export default BottomToolbar;
