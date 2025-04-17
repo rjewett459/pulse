@@ -236,7 +236,6 @@ function App() {
       </div>
 
       <BottomToolbar
-        sessionStatus={sessionStatus}
         isPTTUserSpeaking={isPTTUserSpeaking}
         handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
         handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
