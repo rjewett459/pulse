@@ -91,7 +91,8 @@ function App() {
       if (!EPHEMERAL_KEY) return;
 
       if (!audioElementRef.current) {
-        audioElementRef = { current: document.createElement("audio") };
+  audioElementRef.current = document.createElement("audio");
+}
       }
       audioElementRef.current.autoplay = isAudioPlaybackEnabled;
 
