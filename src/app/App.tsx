@@ -83,45 +83,48 @@ function App() {
   };
 
   const connectToRealtime = async () => {
-    if (sessionStatus !== "DISCONNECTED") return;
-    setSessionStatus("CONNECTING");
+  if (sessionStatus !== "DISCONNECTED") return;
+  setSessionStatus("CONNECTING");
 
-    try {
-      const EPHEMERAL_KEY = await fetchEphemeralKey();
-      if (!EPHEMERAL_KEY) return;
+  try {
+    const EPHEMERAL_KEY = await fetchEphemeralKey();
+    if (!EPHEMERAL_KEY) return;
 
-      if (!audioElementRef.current) {
-  audioElementRef.current = document.createElement("audio");
-}
-      }
-      audioElementRef.current.autoplay = isAudioPlaybackEnabled;
-
-      const { pc, dc } = await createRealtimeConnection(EPHEMERAL_KEY, audioElementRef);
-      pcRef.current = pc;
-      dcRef.current = dc;
-
-      dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
-
-      setSessionStatus("CONNECTED");
-
-      if (timerRef.current) clearInterval(timerRef.current);
-      setTimer(180);
-      timerRef.current = setInterval(() => {
-        setTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current!);
-            disconnectFromRealtime();
-            alert("⏰ Time's up! Thanks for trying VoiceMate Pulse.");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-    } catch {
-      setSessionStatus("DISCONNECTED");
+    if (!audioElementRef.current) {
+      audioElementRef.current = document.createElement("audio");
     }
-  };
+
+    audioElementRef.current.autoplay = isAudioPlaybackEnabled;
+
+    const { pc, dc } = await createRealtimeConnection(EPHEMERAL_KEY, audioElementRef);
+    pcRef.current = pc;
+    dcRef.current = dc;
+
+    dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
+
+    setSessionStatus("CONNECTED");
+
+    updateSession(true); // ✅ Optional: trigger greeting on connect
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimer(180);
+    timerRef.current = setInterval(() => {
+      setTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          disconnectFromRealtime();
+          alert("⏰ Time's up! Thanks for trying VoiceMate Pulse.");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+  } catch {
+    setSessionStatus("DISCONNECTED");
+  }
+};
+
 
   const disconnectFromRealtime = () => {
     if (pcRef.current) {
