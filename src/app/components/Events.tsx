@@ -32,14 +32,15 @@ function Events({ isExpanded }: EventsProps) {
 
   return (
     <div
-      className={`transition-all duration-300 ease-in-out bg-white border-l border-gray-300 z-40 shadow-md absolute md:static top-0 right-0 w-3/4 max-w-sm md:w-[300px] md:border-0 md:shadow-none transform ${
+      className={`transition-all duration-300 ease-in-out bg-white z-40 shadow-md absolute md:static top-0 right-0 transform ${
         isExpanded ? "translate-x-0" : "translate-x-full"
-      }`}
+      } 
+      w-full max-w-[90vw] md:max-w-sm md:w-[300px] border-l border-gray-300 md:border-0 md:shadow-none`}
       style={{ height: "100%" }}
     >
       {isExpanded && (
         <>
-          {/* Mobile Close Button (hidden on mobile now) */}
+          {/* Close button hidden on mobile */}
           <div className="hidden md:flex justify-end px-4 pt-3">
             <button
               onClick={() => toggleExpand("")}
@@ -50,11 +51,11 @@ function Events({ isExpanded }: EventsProps) {
           </div>
 
           {/* Logs Header */}
-          <div className="font-semibold px-6 py-4 sticky top-0 z-10 text-base border-b bg-white">
+          <div className="font-semibold px-4 py-3 sticky top-0 z-10 text-base border-b bg-white">
             Logs
           </div>
 
-          {/* Scrollable logs area */}
+          {/* Scrollable logs */}
           <div
             ref={eventLogsContainerRef}
             className="overflow-y-auto px-2"
@@ -113,3 +114,4 @@ function Events({ isExpanded }: EventsProps) {
 }
 
 export default Events;
+
