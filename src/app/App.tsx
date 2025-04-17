@@ -18,7 +18,7 @@ import { allAgentSets } from "@/app/agentConfigs";
 function App() {
   const [timer, setTimer] = useState<number>(180); // 3 minutes
   const timerRef = useRef<NodeJS.Timeout | null>(null);
- 
+
   const { addTranscriptMessage, addTranscriptBreadcrumb } = useTranscript();
   const { logClientEvent } = useEvent();
 
@@ -36,8 +36,7 @@ function App() {
     typeof window !== "undefined" ? window.innerWidth * 0.6 : 400
   );
 
-  const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false); // Logs 
-  
+  const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false);
 
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
     if (dcRef.current && dcRef.current.readyState === "open") {
@@ -89,42 +88,41 @@ function App() {
     if (sessionStatus !== "DISCONNECTED") return;
     setSessionStatus("CONNECTING");
 
-   try {
-    const EPHEMERAL_KEY = await fetchEphemeralKey();
-    if (!EPHEMERAL_KEY) return;
+    try {
+      const EPHEMERAL_KEY = await fetchEphemeralKey();
+      if (!EPHEMERAL_KEY) return;
 
-    if (!audioElementRef.current) {
-      audioElementRef.current = document.createElement("audio");
+      if (!audioElementRef.current) {
+        audioElementRef.current = document.createElement("audio");
+      }
+      audioElementRef.current.autoplay = isAudioPlaybackEnabled;
+
+      const { pc, dc } = await createRealtimeConnection(EPHEMERAL_KEY, audioElementRef);
+      pcRef.current = pc;
+      dcRef.current = dc;
+
+      dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
+
+      setSessionStatus("CONNECTED");
+
+      if (timerRef.current) clearInterval(timerRef.current);
+      setTimer(180);
+      timerRef.current = setInterval(() => {
+        setTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            disconnectFromRealtime();
+            alert("⏰ Time's up! Thanks for trying VoiceMate Pulse.");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+    } catch {
+      setSessionStatus("DISCONNECTED");
     }
-    audioElementRef.current.autoplay = isAudioPlaybackEnabled;
-
-    const { pc, dc } = await createRealtimeConnection(EPHEMERAL_KEY, audioElementRef);
-    pcRef.current = pc;
-    dcRef.current = dc;
-
-    dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
-
-    // ✅ Start timer when connected
-    setSessionStatus("CONNECTED");
-
-    if (timerRef.current) clearInterval(timerRef.current);
-    setTimer(180);
-    timerRef.current = setInterval(() => {
-      setTimer(prev => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!);
-          disconnectFromRealtime();
-          alert("⏰ Time's up! Thanks for trying VoiceMate Pulse.");
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-  } catch {
-    setSessionStatus("DISCONNECTED");
-  }
-};
+  };
 
   const disconnectFromRealtime = () => {
     if (pcRef.current) {
@@ -140,11 +138,11 @@ function App() {
   const updateSession = (shouldTriggerResponse = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
 
- const sessionStartEvent = {
-  type: "session.update",
-  session: {
-    modalities: ["text", "audio"],
-    instructions: `Affect/personality: A cheerful guide
+    const sessionStartEvent = {
+      type: "session.update",
+      session: {
+        modalities: ["text", "audio"],
+        instructions: `Affect/personality: A cheerful guide
 
 Tone: Friendly, clear, and reassuring, creating a calm atmosphere and making the listener feel confident and comfortable.
 
@@ -153,30 +151,30 @@ Pronunciation: Clear, articulate, and steady, ensuring each instruction is easil
 Pause: Brief, purposeful pauses after key instructions (e.g., "cross the street" and "turn right") to allow time for the listener to process the information and follow along.
 
 Emotion: Warm and supportive, conveying empathy and care, ensuring the listener feels guided and safe throughout the journey.`,
-    voice: "sage", // ✅ must be set BEFORE first output
-    input_audio_format: "pcm16",
-    output_audio_format: "pcm16",
-    input_audio_transcription: { model: "whisper-1" },
-    turn_detection: {
-      type: "server_vad",
-      threshold: 0.5,
-      prefix_padding_ms: 300,
-      silence_duration_ms: 200,
-      create_response: true,
-    },
-  },
-};
+        voice: "sage",
+        input_audio_format: "pcm16",
+        output_audio_format: "pcm16",
+        input_audio_transcription: { model: "whisper-1" },
+        turn_detection: {
+          type: "server_vad",
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 200,
+          create_response: true,
+        },
+      },
+    };
 
-// ✅ Send safely if data channel is ready
-if (dcRef.current?.readyState === "open") {
-  dcRef.current.send(JSON.stringify(sessionStartEvent));
-} else {
-  console.warn("Tried to send but data channel isn't open yet.");
-}
+    if (dcRef.current?.readyState === "open") {
+      dcRef.current.send(JSON.stringify(sessionStartEvent));
+    } else {
+      console.warn("Tried to send but data channel isn't open yet.");
+    }
 
-console.log("Sending session update:", sessionStartEvent);
-sendClientEvent(sessionStartEvent); // still use your existing helper
-if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
+    console.log("Sending session update:", sessionStartEvent);
+    sendClientEvent(sessionStartEvent);
+    if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
+  };
 
   const sendSimulatedUserMessage = (text: string) => {
     const id = uuidv4().slice(0, 32);
@@ -188,8 +186,7 @@ if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
     sendClientEvent({ type: "response.create" });
   };
 
-  
-const handleSendTextMessage = () => {
+  const handleSendTextMessage = () => {
     const trimmed = userText.trim();
     if (!trimmed) return;
     sendClientEvent({
@@ -200,123 +197,106 @@ const handleSendTextMessage = () => {
     sendClientEvent({ type: "response.create" });
   };
 
-const onToggleConnection = () => {
-  if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
-    disconnectFromRealtime();
-  } else {
-    connectToRealtime();
-  }
-};
+  const onToggleConnection = () => {
+    if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
+      disconnectFromRealtime();
+    } else {
+      connectToRealtime();
+    }
+  };
 
   return (
-  <>
-{/* Header Section */}
-<div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 pb-24">
-  {/* Header */}
-  <div className="px-4 pt-4 sm:pt-6 flex items-center justify-between gap-3 relative">
-    <div className="flex items-center gap-3">
-      <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-        <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
-      </div>
-      <div className="flex flex-col text-center sm:text-left">
-        <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
-          VoiceMate Pulse
-        </h1>
-        <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-          Live Voice Demo – Tap Connect 👇🏼 to Begin
-        </p>
-        <p className="text-sm text-gray-400 mt-0.5">
-          Enjoy 3 minutes on us!
-        </p>
-      </div>
-    </div>
-
-    {/* Countdown Timer */}
-    {sessionStatus === "CONNECTED" && (
-      <div className="text-sm sm:text-base font-semibold text-gray-800 pr-2">
-        ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
-      </div>
-    )}
-  </div>
-
-
-
-
-      {/* Transcript + Logs with Resizer */}
-      <div className="flex-grow flex relative overflow-hidden pb-24">
-        {/* Left: Transcript */}
-        <div className="flex-grow min-w-0 overflow-hidden">
-          <Transcript
-  userText={userText}
-  setUserText={setUserText}
-  onSendMessage={handleSendTextMessage}
-  canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-  transcriptWidth={transcriptWidth}
-  setTranscriptWidth={setTranscriptWidth}
-/>
-
-
+    <>
+      <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 pb-24">
+        <div className="px-4 pt-4 sm:pt-6 flex items-center justify-between gap-3 relative">
+          <div className="flex items-center gap-3">
+            <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+              <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+            </div>
+            <div className="flex flex-col text-center sm:text-left">
+              <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
+                VoiceMate Pulse
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                Live Voice Demo – Tap Connect 👇🏼 to Begin
+              </p>
+              <p className="text-sm text-gray-400 mt-0.5">Enjoy 3 minutes on us!</p>
+            </div>
+          </div>
+          {sessionStatus === "CONNECTED" && (
+            <div className="text-sm sm:text-base font-semibold text-gray-800 pr-2">
+              ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
+            </div>
+          )}
         </div>
 
-        {/* Resizer */}
-        <div
-          className="hidden md:block w-1 bg-gray-300 cursor-col-resize hover:bg-gray-500"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            const startX = e.clientX;
-            const startWidth = document.querySelector(".flex-grow")!.clientWidth;
+        <div className="flex-grow flex relative overflow-hidden pb-24">
+          <div className="flex-grow min-w-0 overflow-hidden">
+            <Transcript
+              userText={userText}
+              setUserText={setUserText}
+              onSendMessage={handleSendTextMessage}
+              canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+              transcriptWidth={transcriptWidth}
+              setTranscriptWidth={setTranscriptWidth}
+            />
+          </div>
 
-            const onMouseMove = (moveEvent: MouseEvent) => {
-              const deltaX = moveEvent.clientX - startX;
-              const transcriptPanel = document.querySelector(".flex-grow") as HTMLElement;
-              if (transcriptPanel) {
-                transcriptPanel.style.flex = "none";
-                transcriptPanel.style.width = `${startWidth + deltaX}px`;
-              }
-            };
+          <div
+            className="hidden md:block w-1 bg-gray-300 cursor-col-resize hover:bg-gray-500"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const startX = e.clientX;
+              const startWidth = document.querySelector(".flex-grow")!.clientWidth;
 
-            const onMouseUp = () => {
-              window.removeEventListener("mousemove", onMouseMove);
-              window.removeEventListener("mouseup", onMouseUp);
-            };
+              const onMouseMove = (moveEvent: MouseEvent) => {
+                const deltaX = moveEvent.clientX - startX;
+                const transcriptPanel = document.querySelector(".flex-grow") as HTMLElement;
+                if (transcriptPanel) {
+                  transcriptPanel.style.flex = "none";
+                  transcriptPanel.style.width = `${startWidth + deltaX}px`;
+                }
+              };
 
-            window.addEventListener("mousemove", onMouseMove);
-            window.addEventListener("mouseup", onMouseUp);
-          }}
-        ></div>
+              const onMouseUp = () => {
+                window.removeEventListener("mousemove", onMouseMove);
+                window.removeEventListener("mouseup", onMouseUp);
+              };
 
-        {/* Right: Logs */}
-        <div
-          className={`fixed md:static top-0 right-0 bottom-16 h-auto md:h-full bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
-            isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-          } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
-        >
-          <Events
-  isExpanded={isEventsPaneExpanded}
-  transcriptWidth={transcriptWidth}
-  setTranscriptWidth={setTranscriptWidth}
-/>
+              window.addEventListener("mousemove", onMouseMove);
+              window.addEventListener("mouseup", onMouseUp);
+            }}
+          ></div>
+
+          <div
+            className={`fixed md:static top-0 right-0 bottom-16 h-auto md:h-full bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
+              isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+            } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+          >
+            <Events
+              isExpanded={isEventsPaneExpanded}
+              transcriptWidth={transcriptWidth}
+              setTranscriptWidth={setTranscriptWidth}
+            />
+          </div>
+        </div>
+
+        <div className="fixed bottom-0 left-0 w-full z-[9999] bg-white border-t border-gray-300">
+          <BottomToolbar
+            sessionStatus={sessionStatus}
+            onToggleConnection={onToggleConnection}
+            isPTTUserSpeaking={isPTTUserSpeaking}
+            handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+            handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+            isEventsPaneExpanded={isEventsPaneExpanded}
+            setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+            isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+            setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+          />
         </div>
       </div>
-
-      {/* Bottom Toolbar */}
-      <div className="fixed bottom-0 left-0 w-full z-[9999] bg-white border-t border-gray-300">
-        <BottomToolbar
-          sessionStatus={sessionStatus}
-          onToggleConnection={onToggleConnection}
-          isPTTUserSpeaking={isPTTUserSpeaking}
-          handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-          handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-          isEventsPaneExpanded={isEventsPaneExpanded}
-          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-        />
-      </div>
-    </div>
-  </>
-);
-
+    </>
+  );
 }
 
 export default App;
