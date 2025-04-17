@@ -41,9 +41,21 @@ function Events({ isExpanded }: EventsProps) {
     >
       {isExpanded && (
         <div>
+          {/* Mobile Close Button */}
+          <div className="md:hidden flex justify-end px-4 pt-3">
+            <button
+              onClick={() => toggleExpand(null)} // collapse all logs
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Close Logs ✖
+            </button>
+          </div>
+
+          {/* Logs Header */}
           <div className="font-semibold px-6 py-4 sticky top-0 z-10 text-base border-b bg-white">
             Logs
           </div>
+
           <div>
             {loggedEvents.map((log) => {
               const arrowInfo = getDirectionArrow(log.direction);
@@ -65,7 +77,7 @@ function Events({ isExpanded }: EventsProps) {
                         style={{ color: arrowInfo.color }}
                         className="ml-1 mr-2"
                       >
-                      {arrowInfo.symbol}
+                        {arrowInfo.symbol}
                       </span>
                       <span
                         className={
