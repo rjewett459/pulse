@@ -33,9 +33,7 @@ function App() {
     typeof window !== "undefined" ? window.innerWidth * 0.6 : 400
   );
 
-  const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false); // Logs default to hidden
-
-default to hidden
+  const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false); // Logs 
   const [userText, setUserText] = useState<string>("");
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
