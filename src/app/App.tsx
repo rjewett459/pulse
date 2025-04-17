@@ -178,7 +178,7 @@ function App() {
       {/* Header */}
       <div className="px-4 pt-4 sm:pt-6 flex items-center gap-3">
         <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={50} height={50} />
         </div>
         <div className="flex flex-col text-center sm:text-left">
           <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
