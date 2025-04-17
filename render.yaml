@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: pulse-app
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    build:
+      cache:
+        paths:
+          - node_modules
+          - .next/cache
