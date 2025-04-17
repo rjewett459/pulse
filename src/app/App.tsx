@@ -168,7 +168,8 @@ function App() {
   return (
   <>
     {/* Header Section */}
-    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 relative">
+    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 pb-24">
+
       {/* Header */}
       <div className="px-4 pt-4 sm:pt-6 flex items-center gap-3">
         <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
@@ -187,8 +188,8 @@ function App() {
         </div>
       </div>
 
-      {/* Transcript + Logs (keep both in the same row for layout) */}
-      <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden relative">
+      {/* Transcript + Logs */}
+      <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden relative pb-24">
         <Transcript
           userText={userText}
           setUserText={setUserText}
@@ -207,20 +208,23 @@ function App() {
       </div>
 
       {/* Bottom Toolbar (ALWAYS VISIBLE) */}
-      <BottomToolbar
-        sessionStatus={sessionStatus}
-        onToggleConnection={onToggleConnection}
-        isPTTUserSpeaking={isPTTUserSpeaking}
-        handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-        handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-        isEventsPaneExpanded={isEventsPaneExpanded}
-        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-      />
+      <div className="fixed bottom-0 left-0 w-full z-40 bg-white border-t border-gray-300">
+        <BottomToolbar
+          sessionStatus={sessionStatus}
+          onToggleConnection={onToggleConnection}
+          isPTTUserSpeaking={isPTTUserSpeaking}
+          handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+          handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+          isEventsPaneExpanded={isEventsPaneExpanded}
+          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+        />
+      </div>
+
     </div>
   </>
-  );
+);
 }
 
 export default App;
