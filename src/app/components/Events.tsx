@@ -44,9 +44,7 @@ function Events({ isExpanded }: EventsProps) {
           <div className="hidden md:flex justify-end px-4 pt-3">
             <button
               onClick={() => toggleExpand("")}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Close Logs ✖
+             
             </button>
           </div>
 
