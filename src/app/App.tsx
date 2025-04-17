@@ -167,7 +167,7 @@ Emotion: Warm and supportive, conveying empathy and care, ensuring the listener 
   },
 };
 
-dataChannel.send(JSON.stringify(sessionStartEvent));
+dcRef.current?.send(JSON.stringify(sessionStartEvent)); // ✅ FIXED
 
 console.log("Sending session update:", sessionUpdateEvent);
 
