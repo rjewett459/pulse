@@ -167,6 +167,8 @@ Emotion: Warm and supportive, conveying empathy and care, ensuring the listener 
   },
 };
 
+console.log("Sending session update:", sessionUpdateEvent);
+
 
     sendClientEvent(sessionUpdateEvent);
     if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
