@@ -188,22 +188,24 @@ function App() {
       </div>
 
       {/* Transcript + Logs */}
-      <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden pb-28">
-        <Transcript
-          userText={userText}
-          setUserText={setUserText}
-          onSendMessage={handleSendTextMessage}
-          canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-        />
+      <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden relative">
+  <Transcript
+    userText={userText}
+    setUserText={setUserText}
+    onSendMessage={handleSendTextMessage}
+    canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+  />
+</div>
 
-        {/* Slide-in logs on mobile */}
-        <div
-          className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
-            isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-          } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
-        >
-          <Events isExpanded={isEventsPaneExpanded} />
-        </div>
+{/* Slide-in logs - outside main flow */}
+<div
+  className={`fixed md:static top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
+    isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+  } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+>
+  <Events isExpanded={isEventsPaneExpanded} />
+</div>
+
       </div>
 
       {/* Bottom Toolbar (ALWAYS VISIBLE) */}
