@@ -69,7 +69,7 @@ function Transcript({
   };
 
   return (
-    <div className="flex flex-col flex-1 bg-white min-h-0 rounded-xl">
+    <div className="flex flex-col flex-1 bg-white/5 backdrop-blur-md min-h-0 rounded-2xl border border-white/10 shadow-lg">
       <div className="relative flex-1 min-h-0">
         <button
           onClick={handleCopyTranscript}
