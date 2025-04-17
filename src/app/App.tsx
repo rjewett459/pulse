@@ -199,10 +199,11 @@ function App() {
 
         {/* Slide-in logs */}
         <div
-          className={`fixed md:static top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
-            isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-          } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
-        >
+  className={`fixed md:static top-0 right-0 bottom-16 h-auto md:h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
+    isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+  } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+>
+
           <Events isExpanded={isEventsPaneExpanded} />
         </div>
       </div>
