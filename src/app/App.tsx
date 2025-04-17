@@ -16,6 +16,9 @@ import { createRealtimeConnection } from "./lib/realtimeConnection";
 import { allAgentSets } from "@/app/agentConfigs";
 
 function App() {
+  const [timer, setTimer] = useState<number>(180); // 3 minutes
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+ 
   const { addTranscriptMessage, addTranscriptBreadcrumb } = useTranscript();
   const { logClientEvent } = useEvent();
 
@@ -152,13 +155,47 @@ function App() {
     sendClientEvent({ type: "response.create" });
   };
 
-  const onToggleConnection = () => {
-    if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
-      disconnectFromRealtime();
-    } else {
-      connectToRealtime();
+  const connectToRealtime = async () => {
+  if (sessionStatus !== "DISCONNECTED") return;
+  setSessionStatus("CONNECTING");
+
+  try {
+    const EPHEMERAL_KEY = await fetchEphemeralKey();
+    if (!EPHEMERAL_KEY) return;
+
+    if (!audioElementRef.current) {
+      audioElementRef.current = document.createElement("audio");
     }
-  };
+    audioElementRef.current.autoplay = isAudioPlaybackEnabled;
+
+    const { pc, dc } = await createRealtimeConnection(EPHEMERAL_KEY, audioElementRef);
+    pcRef.current = pc;
+    dcRef.current = dc;
+
+    dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
+
+    // ✅ Start timer when connected
+    setSessionStatus("CONNECTED");
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimer(180);
+    timerRef.current = setInterval(() => {
+      setTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          disconnectFromRealtime();
+          alert("⏰ Time's up! Thanks for trying VoiceMate Pulse.");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+  } catch {
+    setSessionStatus("DISCONNECTED");
+  }
+};
+
 
   const handleSendTextMessage = () => {
     const trimmed = userText.trim();
@@ -173,6 +210,7 @@ function App() {
 
   return (
   <>
+<<<<<<< HEAD
     {/* Header Section */}
     <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 pb-24">
       {/* Header */}
@@ -192,6 +230,35 @@ function App() {
           </p>
         </div>
       </div>
+=======
+    {/* Header */}
+<div className="px-4 pt-4 sm:pt-6 flex items-center justify-between gap-3 relative">
+  <div className="flex items-center gap-3">
+    <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+      <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+    </div>
+    <div className="flex flex-col text-center sm:text-left">
+      <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
+        VoiceMate Pulse
+      </h1>
+      <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+        Live Voice Demo – Tap Connect 👇🏼 to Begin
+      </p>
+      <p className="text-sm text-gray-400 mt-0.5">
+        Enjoy a couple of minutes on us!
+      </p>
+    </div>
+  </div>
+
+  {/* Countdown Timer */}
+  {sessionStatus === "CONNECTED" && (
+    <div className="text-sm sm:text-base font-semibold text-gray-800 pr-2">
+      ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
+    </div>
+  )}
+</div>
+
+>>>>>>> 10316a1 (Add session timer and auto-disconnect after 3 minutes)
 
       {/* Transcript + Logs with Resizer */}
       <div className="flex-grow flex relative overflow-hidden pb-24">
