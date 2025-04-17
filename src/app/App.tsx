@@ -237,7 +237,6 @@ function App() {
 
       <BottomToolbar
         sessionStatus={sessionStatus}
-        onToggleConnection={onToggleConnection}
         isPTTUserSpeaking={isPTTUserSpeaking}
         handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
         handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
