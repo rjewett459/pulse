@@ -140,11 +140,11 @@ function App() {
   const updateSession = (shouldTriggerResponse = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
 
-    const sessionUpdateEvent = {
+    const sessionStartEvent = {
   type: "session.update",
   session: {
     modalities: ["text", "audio"],
-    instructions: `Affect/personality: A cheerful guide
+      instructions: `Affect/personality: A cheerful guide
 
 Tone: Friendly, clear, and reassuring, creating a calm atmosphere and making the listener feel confident and comfortable.
 
@@ -153,7 +153,7 @@ Pronunciation: Clear, articulate, and steady, ensuring each instruction is easil
 Pause: Brief, purposeful pauses after key instructions (e.g., "cross the street" and "turn right") to allow time for the listener to process the information and follow along.
 
 Emotion: Warm and supportive, conveying empathy and care, ensuring the listener feels guided and safe throughout the journey.`,
-    voice: "sage",
+    voice: "sage", // ✅ must be set BEFORE first output
     input_audio_format: "pcm16",
     output_audio_format: "pcm16",
     input_audio_transcription: { model: "whisper-1" },
@@ -166,6 +166,8 @@ Emotion: Warm and supportive, conveying empathy and care, ensuring the listener 
     },
   },
 };
+
+dataChannel.send(JSON.stringify(sessionStartEvent));
 
 console.log("Sending session update:", sessionUpdateEvent);
 
