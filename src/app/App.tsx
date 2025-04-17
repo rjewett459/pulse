@@ -91,7 +91,7 @@ function App() {
       if (!EPHEMERAL_KEY) return;
 
       if (!audioElementRef.current) {
-        audioElementRef.current = document.createElement("audio");
+        audioElementRef = { current: document.createElement("audio") };
       }
       audioElementRef.current.autoplay = isAudioPlaybackEnabled;
 
@@ -188,7 +188,7 @@ function App() {
     if (sessionStatus === "DISCONNECTED") {
       connectToRealtime();
     } else {
-      sendSimulatedUserMessage("Hi, can you help me?");
+      disconnectFromRealtime();
     }
   };
 
@@ -199,7 +199,7 @@ function App() {
           <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
           <div>
             <h1 className="text-xl font-bold">VoiceMate Pulse</h1>
-            <p className="text-sm text-gray-400">Live Voice Demo – Tap the orb 👇🏼 to begin</p>
+            <p className="text-sm text-gray-400">Live Voice Demo – Tap the orb 👇🏼</p>
           </div>
         </div>
         {sessionStatus === "CONNECTED" && (
@@ -209,13 +209,33 @@ function App() {
         )}
       </header>
 
-      <div className="flex justify-center items-center py-8">
+      {/* ORB UI */}
+      <div className="flex justify-center items-center flex-col py-6">
         <motion.div
           className="w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-pink-600 shadow-2xl cursor-pointer"
-          animate={{ scale: sessionStatus === "CONNECTED" ? [1, 1.1, 1] : 1 }}
-          transition={{ duration: 1.5, repeat: Infinity }}
+          animate={{
+            scale:
+              sessionStatus === "DISCONNECTED"
+                ? 1
+                : isPTTUserSpeaking
+                ? [1, 1.15, 1]
+                : [1, 1.05, 1],
+            opacity:
+              sessionStatus === "DISCONNECTED"
+                ? 0.4
+                : isPTTUserSpeaking
+                ? 1
+                : 0.85,
+          }}
+          transition={{ duration: 1.2, repeat: Infinity }}
           onClick={onOrbClick}
         />
+        <p className="text-sm text-gray-400 mt-2">
+          {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
+          {sessionStatus === "CONNECTING" && "⏳ Connecting..."}
+          {sessionStatus === "CONNECTED" && isPTTUserSpeaking && "🎙️ Listening..."}
+          {sessionStatus === "CONNECTED" && !isPTTUserSpeaking && "🤔 Thinking..."}
+        </p>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
