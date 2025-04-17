@@ -93,7 +93,7 @@ function Transcript({
               const isUser = role === "user";
               const baseContainer = "flex justify-end flex-col";
               const containerClasses = `${baseContainer} ${isUser ? "items-end" : "items-start"}`;
-              const bubbleBase = `max-w-lg p-3 rounded-xl ${isUser ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-black"}`;
+              const bubbleBase = `max-w-lg p-3 rounded-xl ${isUser ? "bg-gray-900 text-gray-100" : "bg-gray-800 text-gray-100"}`;
               const isBracketedMessage = title.startsWith("[") && title.endsWith("]");
               const messageStyle = isBracketedMessage ? "italic text-gray-400" : "";
               const displayTitle = isBracketedMessage ? title.slice(1, -1) : title;
