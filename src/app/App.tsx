@@ -34,9 +34,7 @@ function App() {
   );
 
   const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false); // Logs 
-  const [userText, setUserText] = useState<string>("");
-  const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
-  const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
+  
 
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
     if (dcRef.current && dcRef.current.readyState === "open") {
