@@ -169,54 +169,59 @@ function App() {
   <>
     {/* Header Section */}
     <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800">
-  {/* Header */}
-  <div className="px-4 pt-4 sm:pt-6 flex items-center gap-3">
-    <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-      <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+      {/* Header */}
+      <div className="px-4 pt-4 sm:pt-6 flex items-center gap-3">
+        <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+        </div>
+        <div className="flex flex-col text-center sm:text-left">
+          <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
+            VoiceMate Pulse
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+            Live Voice Demo – Tap Connect 👇🏼 to Begin
+          </p>
+          <p className="text-sm text-gray-400 mt-0.5">
+            Enjoy a couple of minutes on us!
+          </p>
+        </div>
+      </div>
+
+      {/* Transcript + Logs */}
+      <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden pb-28">
+        <Transcript
+          userText={userText}
+          setUserText={setUserText}
+          onSendMessage={handleSendTextMessage}
+          canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+        />
+
+        {/* Slide-in logs on mobile */}
+        <div
+          className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
+            isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+          } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+        >
+          <Events isExpanded={isEventsPaneExpanded} />
+        </div>
+      </div>
+
+      {/* Bottom Toolbar (ALWAYS VISIBLE) */}
+      <BottomToolbar
+        sessionStatus={sessionStatus}
+        onToggleConnection={onToggleConnection}
+        isPTTUserSpeaking={isPTTUserSpeaking}
+        handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+        handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+        isEventsPaneExpanded={isEventsPaneExpanded}
+        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+      />
     </div>
-    <div className="flex flex-col text-center sm:text-left">
-      <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">VoiceMate Pulse</h1>
-      <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Live Voice Demo – Tap Connect 👇🏼 to Begin</p>
-      <p className="text-sm text-gray-400 mt-0.5">Enjoy a couple of minutes on us!</p>
-    </div>
-  </div>
-
-  {/* Transcript + Logs */}
-  <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden">
-    <Transcript
-      userText={userText}
-      setUserText={setUserText}
-      onSendMessage={handleSendTextMessage}
-      canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-    />
-
-    {/* Slide-in logs on mobile */}
-    <div
-      className={`absolute top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-40 shadow-md transform transition-transform duration-300 ease-in-out ${
-        isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-      } md:static md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
-    >
-      <Events isExpanded={isEventsPaneExpanded} />
-    </div>
-  </div>
-
-  {/* Bottom Toolbar (ALWAYS VISIBLE) */}
-  <BottomToolbar
-    sessionStatus={sessionStatus}
-    onToggleConnection={onToggleConnection}
-    isPTTUserSpeaking={isPTTUserSpeaking}
-    handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-    handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-    isEventsPaneExpanded={isEventsPaneExpanded}
-    setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-    isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-    setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-  />
-</div>
-
   </>
-  ); // 👈 closing return block
-} // 👈 closing App function
+);
+
 
 export default App;
 
