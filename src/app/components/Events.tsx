@@ -11,8 +11,7 @@ export interface EventsProps {
 function Events({ isExpanded }: EventsProps) {
   const [prevEventLogs, setPrevEventLogs] = useState<LoggedEvent[]>([]);
   const eventLogsContainerRef = useRef<HTMLDivElement | null>(null);
-
-  const { loggedEvents, toggleExpand, collapseAllLogs } = useEvent(); // ✅
+  const { loggedEvents, toggleExpand } = useEvent();
 
   const getDirectionArrow = (direction: string) => {
     if (direction === "client") return { symbol: "▲", color: "#7f5af0" };
@@ -33,18 +32,17 @@ function Events({ isExpanded }: EventsProps) {
 
   return (
     <div
-      className={
-        (isExpanded ? "w-1/2 overflow-auto" : "w-0 overflow-hidden opacity-0") +
-        " transition-all rounded-xl duration-200 ease-in-out flex flex-col bg-white"
-      }
-      ref={eventLogsContainerRef}
+      className={`transition-all duration-300 ease-in-out bg-white border-l border-gray-300 z-50 shadow-md md:static fixed top-0 right-0 w-3/4 max-w-sm md:w-[300px] md:border-0 md:shadow-none transform ${
+        isExpanded ? "translate-x-0" : "translate-x-full"
+      }`}
+      style={{ bottom: "64px" }} // leave room for toolbar
     >
       {isExpanded && (
-        <div>
+        <>
           {/* Mobile Close Button */}
           <div className="md:hidden flex justify-end px-4 pt-3">
             <button
-              onClick={() => collapseAllLogs()} // ✅
+              onClick={() => toggleExpand("")}
               className="text-sm text-gray-500 hover:text-gray-700"
             >
               Close Logs ✖
@@ -56,7 +54,12 @@ function Events({ isExpanded }: EventsProps) {
             Logs
           </div>
 
-          <div>
+          {/* Scrollable log container */}
+          <div
+            ref={eventLogsContainerRef}
+            className="overflow-y-auto px-2"
+            style={{ maxHeight: "calc(100vh - 160px)" }} // 64px for toolbar + header/padding
+          >
             {loggedEvents.map((log) => {
               const arrowInfo = getDirectionArrow(log.direction);
               const isError =
@@ -66,7 +69,7 @@ function Events({ isExpanded }: EventsProps) {
               return (
                 <div
                   key={log.id}
-                  className="border-t border-gray-200 py-2 px-6 font-mono"
+                  className="border-t border-gray-200 py-2 px-4 font-mono"
                 >
                   <div
                     onClick={() => toggleExpand(log.id)}
@@ -80,10 +83,9 @@ function Events({ isExpanded }: EventsProps) {
                         {arrowInfo.symbol}
                       </span>
                       <span
-                        className={
-                          "flex-1 text-sm " +
-                          (isError ? "text-red-600" : "text-gray-800")
-                        }
+                        className={`flex-1 text-sm ${
+                          isError ? "text-red-600" : "text-gray-800"
+                        }`}
                       >
                         {log.eventName}
                       </span>
@@ -104,7 +106,7 @@ function Events({ isExpanded }: EventsProps) {
               );
             })}
           </div>
-        </div>
+        </>
       )}
     </div>
   );
