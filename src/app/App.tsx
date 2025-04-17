@@ -169,7 +169,6 @@ function App() {
   <>
     {/* Header Section */}
     <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 pb-24">
-
       {/* Header */}
       <div className="px-4 pt-4 sm:pt-6 flex items-center gap-3">
         <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
@@ -188,44 +187,73 @@ function App() {
         </div>
       </div>
 
-      {/* Transcript + Logs */}
-      <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden relative pb-24">
-        <Transcript
-          userText={userText}
-          setUserText={setUserText}
-          onSendMessage={handleSendTextMessage}
-          canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-        />
+      {/* Transcript + Logs with Resizer */}
+      <div className="flex-grow flex relative overflow-hidden pb-24">
+        {/* Left: Transcript */}
+        <div className="flex-grow min-w-0 overflow-hidden">
+          <Transcript
+            userText={userText}
+            setUserText={setUserText}
+            onSendMessage={handleSendTextMessage}
+            canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+          />
+        </div>
 
-        {/* Slide-in logs */}
+        {/* Resizer */}
         <div
-  className={`fixed md:static top-0 right-0 bottom-16 h-auto md:h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
-    isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-  } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
->
+          className="hidden md:block w-1 bg-gray-300 cursor-col-resize hover:bg-gray-500"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            const startX = e.clientX;
+            const startWidth = document.querySelector(".flex-grow")!.clientWidth;
 
+            const onMouseMove = (moveEvent: MouseEvent) => {
+              const deltaX = moveEvent.clientX - startX;
+              const transcriptPanel = document.querySelector(".flex-grow") as HTMLElement;
+              if (transcriptPanel) {
+                transcriptPanel.style.flex = "none";
+                transcriptPanel.style.width = `${startWidth + deltaX}px`;
+              }
+            };
+
+            const onMouseUp = () => {
+              window.removeEventListener("mousemove", onMouseMove);
+              window.removeEventListener("mouseup", onMouseUp);
+            };
+
+            window.addEventListener("mousemove", onMouseMove);
+            window.addEventListener("mouseup", onMouseUp);
+          }}
+        ></div>
+
+        {/* Right: Logs */}
+        <div
+          className={`fixed md:static top-0 right-0 bottom-16 h-auto md:h-full bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
+            isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+          } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+        >
           <Events isExpanded={isEventsPaneExpanded} />
         </div>
       </div>
 
-      {/* Bottom Toolbar (ALWAYS VISIBLE) */}
-     <div className="fixed bottom-0 left-0 w-full z-[9999] bg-white border-t border-gray-300">
-  <BottomToolbar
-    sessionStatus={sessionStatus}
-    onToggleConnection={onToggleConnection}
-    isPTTUserSpeaking={isPTTUserSpeaking}
-    handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-    handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-    isEventsPaneExpanded={isEventsPaneExpanded}
-    setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-    isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-    setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-  />
-</div>
-
+      {/* Bottom Toolbar */}
+      <div className="fixed bottom-0 left-0 w-full z-[9999] bg-white border-t border-gray-300">
+        <BottomToolbar
+          sessionStatus={sessionStatus}
+          onToggleConnection={onToggleConnection}
+          isPTTUserSpeaking={isPTTUserSpeaking}
+          handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+          handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+          isEventsPaneExpanded={isEventsPaneExpanded}
+          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+        />
+      </div>
     </div>
   </>
 );
+
 }
 
 export default App;

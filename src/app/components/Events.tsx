@@ -6,11 +6,14 @@ import { LoggedEvent } from "@/app/types";
 
 export interface EventsProps {
   isExpanded: boolean;
+  setTranscriptWidth: (val: number) => void;
+  transcriptWidth: number;
 }
 
-function Events({ isExpanded }: EventsProps) {
+function Events({ isExpanded, setTranscriptWidth, transcriptWidth }: EventsProps) {
   const [prevEventLogs, setPrevEventLogs] = useState<LoggedEvent[]>([]);
   const eventLogsContainerRef = useRef<HTMLDivElement | null>(null);
+  const dragBarRef = useRef<HTMLDivElement | null>(null);
   const { loggedEvents, toggleExpand } = useEvent();
 
   const getDirectionArrow = (direction: string) => {
@@ -21,32 +24,57 @@ function Events({ isExpanded }: EventsProps) {
 
   useEffect(() => {
     const hasNewEvent = loggedEvents.length > prevEventLogs.length;
-
     if (isExpanded && hasNewEvent && eventLogsContainerRef.current) {
-      eventLogsContainerRef.current.scrollTop =
-        eventLogsContainerRef.current.scrollHeight;
+      eventLogsContainerRef.current.scrollTop = eventLogsContainerRef.current.scrollHeight;
     }
-
     setPrevEventLogs(loggedEvents);
   }, [loggedEvents, isExpanded]);
 
+  // Drag to resize
+  useEffect(() => {
+    const drag = (e: MouseEvent) => {
+      const newWidth = e.clientX;
+      if (newWidth > 100 && newWidth < window.innerWidth - 200) {
+        setTranscriptWidth(newWidth);
+      }
+    };
+    const stopDrag = () => {
+      window.removeEventListener("mousemove", drag);
+      window.removeEventListener("mouseup", stopDrag);
+    };
+    const startDrag = () => {
+      window.addEventListener("mousemove", drag);
+      window.addEventListener("mouseup", stopDrag);
+    };
+    const el = dragBarRef.current;
+    if (el) el.addEventListener("mousedown", startDrag);
+    return () => {
+      if (el) el.removeEventListener("mousedown", startDrag);
+    };
+  }, [setTranscriptWidth]);
+
   return (
     <>
+      {/* Divider for drag */}
       <div
-        className={`transition-all duration-300 ease-in-out bg-white z-40 shadow-md absolute md:static top-0 right-0 transform ${
+        ref={dragBarRef}
+        className="w-1 cursor-col-resize bg-gray-300 hover:bg-gray-500 transition-all duration-100"
+        style={{ zIndex: 51 }}
+      />
+
+      <div
+        className={`transition-all duration-300 ease-in-out bg-white shadow-md absolute md:static top-0 right-0 transform z-40 h-full ${
           isExpanded ? "translate-x-0" : "translate-x-full"
-        } 
-        w-full max-w-[90vw] md:max-w-sm md:w-[300px] border-l border-gray-300 md:border-0 md:shadow-none`}
-        style={{ height: "100%" }}
+        } w-[calc(100%-${transcriptWidth}px)] md:w-[300px]`}
       >
         {isExpanded && (
           <>
             {/* Logs Header */}
-            <div className="font-semibold px-4 py-3 sticky top-0 z-10 text-base border-b bg-white">
+            <div className="font-semibold px-6 py-4 sticky top-0 z-10 text-base border-b bg-white">
               Logs
             </div>
 
-            {/* Scrollable logs */}
+            {/* Scrollable Logs */}
             <div
               ref={eventLogsContainerRef}
               className="overflow-y-auto px-2"
@@ -59,26 +87,16 @@ function Events({ isExpanded }: EventsProps) {
                   log.eventData?.response?.status_details?.error != null;
 
                 return (
-                  <div
-                    key={log.id}
-                    className="border-t border-gray-200 py-2 px-3 font-mono"
-                  >
+                  <div key={log.id} className="border-t border-gray-200 py-2 px-4 font-mono">
                     <div
                       onClick={() => toggleExpand(log.id)}
                       className="flex items-center justify-between cursor-pointer"
                     >
                       <div className="flex items-center flex-1">
-                        <span
-                          style={{ color: arrowInfo.color }}
-                          className="ml-1 mr-2"
-                        >
+                        <span style={{ color: arrowInfo.color }} className="ml-1 mr-2">
                           {arrowInfo.symbol}
                         </span>
-                        <span
-                          className={`flex-1 text-sm ${
-                            isError ? "text-red-600" : "text-gray-800"
-                          }`}
-                        >
+                        <span className={`flex-1 text-sm ${isError ? "text-red-600" : "text-gray-800"}`}>
                           {log.eventName}
                         </span>
                       </div>
@@ -89,7 +107,7 @@ function Events({ isExpanded }: EventsProps) {
 
                     {log.expanded && log.eventData && (
                       <div className="text-gray-800 text-left">
-                        <pre className="whitespace-pre-wrap break-words font-mono text-xs mb-2 mt-2">
+                        <pre className="border-l-2 ml-1 border-gray-200 whitespace-pre-wrap break-words font-mono text-xs mb-2 mt-2 pl-2">
                           {JSON.stringify(log.eventData, null, 2)}
                         </pre>
                       </div>
