@@ -1,5 +1,4 @@
 import React from "react";
-import { SessionStatus } from "@/app/types";
 
 interface BottomToolbarProps {
   isPTTUserSpeaking: boolean;
