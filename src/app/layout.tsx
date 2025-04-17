@@ -3,7 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "VoiceMate Pulse Generator",
-  description: "A demo app from OpenAI.",
+  description: "A demo app from ChatSites™.",
+  icons: [
+    { rel: "icon", url: "/vm_favicon.ico" },
+    { rel: "icon", type: "image/svg+xml", url: "/voicemate.svg" },
+  ],
 };
 
 export default function RootLayout({
@@ -17,3 +21,4 @@ export default function RootLayout({
     </html>
   );
 }
+
