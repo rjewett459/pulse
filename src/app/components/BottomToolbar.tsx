@@ -14,7 +14,6 @@ interface BottomToolbarProps {
 
 function BottomToolbar({
   sessionStatus,
-  onToggleConnection,
   isPTTUserSpeaking,
   handleTalkButtonDown,
   handleTalkButtonUp,
@@ -28,15 +27,6 @@ function BottomToolbar({
 return (
   <div className="fixed bottom-0 left-0 w-full z-40 bg-white border-t border-gray-300">
     <div className="flex justify-between items-center px-4 py-3 w-full text-sm sm:text-base">
-      <button
-        onClick={onToggleConnection}
-        className={`px-4 py-2 rounded-full font-semibold text-white ${
-          sessionStatus === "CONNECTED" ? "bg-red-600" : "bg-green-600"
-        }`}
-      >
-        {sessionStatus === "CONNECTED" ? "Disconnect" : "Connect"}
-      </button>
-
       <div className="flex gap-2 items-center">
         <button
           onMouseDown={handleTalkButtonDown}
