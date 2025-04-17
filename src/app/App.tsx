@@ -184,23 +184,22 @@ function App() {
     sendClientEvent({ type: "response.create" });
   };
 
-  const onToggleConnection = () => {
-    if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
-      disconnectFromRealtime();
-    } else {
+  const onOrbClick = () => {
+    if (sessionStatus === "DISCONNECTED") {
       connectToRealtime();
+    } else {
+      sendSimulatedUserMessage("Hi, can you help me?");
     }
   };
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Header */}
       <header className="flex justify-between items-center px-4 pt-4">
         <div className="flex items-center gap-3">
           <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
           <div>
             <h1 className="text-xl font-bold">VoiceMate Pulse</h1>
-            <p className="text-sm text-gray-400">Live Voice Demo – Tap Connect 👇🏼 to Begin</p>
+            <p className="text-sm text-gray-400">Live Voice Demo – Tap the orb 👇🏼 to begin</p>
           </div>
         </div>
         {sessionStatus === "CONNECTED" && (
@@ -210,16 +209,15 @@ function App() {
         )}
       </header>
 
-      {/* Orb */}
       <div className="flex justify-center items-center py-8">
         <motion.div
-          className="w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-pink-600 shadow-2xl"
+          className="w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-pink-600 shadow-2xl cursor-pointer"
           animate={{ scale: sessionStatus === "CONNECTED" ? [1, 1.1, 1] : 1 }}
           transition={{ duration: 1.5, repeat: Infinity }}
+          onClick={onOrbClick}
         />
       </div>
 
-      {/* Transcript + Logs */}
       <div className="flex flex-1 overflow-hidden">
         <Transcript
           userText={userText}
@@ -237,7 +235,6 @@ function App() {
         />
       </div>
 
-      {/* Bottom Toolbar */}
       <BottomToolbar
         sessionStatus={sessionStatus}
         onToggleConnection={onToggleConnection}
