@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 import Transcript from "./components/Transcript";
 import Events from "./components/Events";
@@ -16,7 +17,7 @@ import { createRealtimeConnection } from "./lib/realtimeConnection";
 import { allAgentSets } from "@/app/agentConfigs";
 
 function App() {
-  const [timer, setTimer] = useState<number>(180); // 3 minutes
+  const [timer, setTimer] = useState<number>(180);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const { addTranscriptMessage, addTranscriptBreadcrumb } = useTranscript();
@@ -32,10 +33,7 @@ function App() {
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
 
-  const [transcriptWidth, setTranscriptWidth] = useState<number>(
-    typeof window !== "undefined" ? window.innerWidth * 0.6 : 400
-  );
-
+  const [transcriptWidth, setTranscriptWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth * 0.6 : 400);
   const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false);
 
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
@@ -142,15 +140,7 @@ function App() {
       type: "session.update",
       session: {
         modalities: ["text", "audio"],
-        instructions: `Affect/personality: A cheerful guide
-
-Tone: Friendly, clear, and reassuring, creating a calm atmosphere and making the listener feel confident and comfortable.
-
-Pronunciation: Clear, articulate, and steady, ensuring each instruction is easily understood while maintaining a natural, conversational flow.
-
-Pause: Brief, purposeful pauses after key instructions (e.g., "cross the street" and "turn right") to allow time for the listener to process the information and follow along.
-
-Emotion: Warm and supportive, conveying empathy and care, ensuring the listener feels guided and safe throughout the journey.`,
+        instructions: "VoiceMate instructions here...",
         voice: "sage",
         input_audio_format: "pcm16",
         output_audio_format: "pcm16",
@@ -167,11 +157,8 @@ Emotion: Warm and supportive, conveying empathy and care, ensuring the listener 
 
     if (dcRef.current?.readyState === "open") {
       dcRef.current.send(JSON.stringify(sessionStartEvent));
-    } else {
-      console.warn("Tried to send but data channel isn't open yet.");
     }
 
-    console.log("Sending session update:", sessionStartEvent);
     sendClientEvent(sessionStartEvent);
     if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
   };
@@ -206,96 +193,63 @@ Emotion: Warm and supportive, conveying empathy and care, ensuring the listener 
   };
 
   return (
-    <>
-      <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 pb-24">
-        <div className="px-4 pt-4 sm:pt-6 flex items-center justify-between gap-3 relative">
-          <div className="flex items-center gap-3">
-            <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-              <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
-            </div>
-            <div className="flex flex-col text-center sm:text-left">
-              <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
-                VoiceMate Pulse
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-                Live Voice Demo – Tap Connect 👇🏼 to Begin
-              </p>
-              <p className="text-sm text-gray-400 mt-0.5">Enjoy 3 minutes on us!</p>
-            </div>
-          </div>
-          {sessionStatus === "CONNECTED" && (
-            <div className="text-sm sm:text-base font-semibold text-gray-800 pr-2">
-              ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
-            </div>
-          )}
-        </div>
-
-        <div className="flex-grow flex relative overflow-hidden pb-24">
-          <div className="flex-grow min-w-0 overflow-hidden">
-            <Transcript
-              userText={userText}
-              setUserText={setUserText}
-              onSendMessage={handleSendTextMessage}
-              canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-              transcriptWidth={transcriptWidth}
-              setTranscriptWidth={setTranscriptWidth}
-            />
-          </div>
-
-          <div
-            className="hidden md:block w-1 bg-gray-300 cursor-col-resize hover:bg-gray-500"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              const startX = e.clientX;
-              const startWidth = document.querySelector(".flex-grow")!.clientWidth;
-
-              const onMouseMove = (moveEvent: MouseEvent) => {
-                const deltaX = moveEvent.clientX - startX;
-                const transcriptPanel = document.querySelector(".flex-grow") as HTMLElement;
-                if (transcriptPanel) {
-                  transcriptPanel.style.flex = "none";
-                  transcriptPanel.style.width = `${startWidth + deltaX}px`;
-                }
-              };
-
-              const onMouseUp = () => {
-                window.removeEventListener("mousemove", onMouseMove);
-                window.removeEventListener("mouseup", onMouseUp);
-              };
-
-              window.addEventListener("mousemove", onMouseMove);
-              window.addEventListener("mouseup", onMouseUp);
-            }}
-          ></div>
-
-          <div
-            className={`fixed md:static top-0 right-0 bottom-16 h-auto md:h-full bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
-              isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-            } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
-          >
-            <Events
-              isExpanded={isEventsPaneExpanded}
-              transcriptWidth={transcriptWidth}
-              setTranscriptWidth={setTranscriptWidth}
-            />
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      {/* Header */}
+      <header className="flex justify-between items-center px-4 pt-4">
+        <div className="flex items-center gap-3">
+          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+          <div>
+            <h1 className="text-xl font-bold">VoiceMate Pulse</h1>
+            <p className="text-sm text-gray-400">Live Voice Demo – Tap Connect 👇🏼 to Begin</p>
           </div>
         </div>
+        {sessionStatus === "CONNECTED" && (
+          <div className="text-sm font-medium">
+            ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
+          </div>
+        )}
+      </header>
 
-        <div className="fixed bottom-0 left-0 w-full z-[9999] bg-white border-t border-gray-300">
-          <BottomToolbar
-            sessionStatus={sessionStatus}
-            onToggleConnection={onToggleConnection}
-            isPTTUserSpeaking={isPTTUserSpeaking}
-            handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-            handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-            isEventsPaneExpanded={isEventsPaneExpanded}
-            setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-            isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-            setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-          />
-        </div>
+      {/* Orb */}
+      <div className="flex justify-center items-center py-8">
+        <motion.div
+          className="w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-pink-600 shadow-2xl"
+          animate={{ scale: sessionStatus === "CONNECTED" ? [1, 1.1, 1] : 1 }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
       </div>
-    </>
+
+      {/* Transcript + Logs */}
+      <div className="flex flex-1 overflow-hidden">
+        <Transcript
+          userText={userText}
+          setUserText={setUserText}
+          onSendMessage={handleSendTextMessage}
+          canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+          transcriptWidth={transcriptWidth}
+          setTranscriptWidth={setTranscriptWidth}
+        />
+
+        <Events
+          isExpanded={isEventsPaneExpanded}
+          transcriptWidth={transcriptWidth}
+          setTranscriptWidth={setTranscriptWidth}
+        />
+      </div>
+
+      {/* Bottom Toolbar */}
+      <BottomToolbar
+        sessionStatus={sessionStatus}
+        onToggleConnection={onToggleConnection}
+        isPTTUserSpeaking={isPTTUserSpeaking}
+        handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+        handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+        isEventsPaneExpanded={isEventsPaneExpanded}
+        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+      />
+    </div>
   );
 }
 
