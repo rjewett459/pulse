@@ -2,7 +2,6 @@ import React from "react";
 import { SessionStatus } from "@/app/types";
 
 interface BottomToolbarProps {
-  sessionStatus: SessionStatus;
   isPTTUserSpeaking: boolean;
   handleTalkButtonDown: () => void;
   handleTalkButtonUp: () => void;
@@ -13,7 +12,6 @@ interface BottomToolbarProps {
 }
 
 function BottomToolbar({
-  sessionStatus,
   isPTTUserSpeaking,
   handleTalkButtonDown,
   handleTalkButtonUp,
