@@ -210,55 +210,37 @@ function App() {
 
   return (
   <>
-<<<<<<< HEAD
-    {/* Header Section */}
-    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 pb-24">
-      {/* Header */}
-      <div className="px-4 pt-4 sm:pt-6 flex items-center gap-3">
-        <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={50} height={50} />
-        </div>
-        <div className="flex flex-col text-center sm:text-left">
-          <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
-            VoiceMate Pulse
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-            Live Voice Demo – Tap Connect 👇🏼 to Begin
-          </p>
-          <p className="text-sm text-gray-400 mt-0.5">
-            Enjoy a couple of minutes on us!
-          </p>
-        </div>
+{/* Header Section */}
+<div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 pb-24">
+  {/* Header */}
+  <div className="px-4 pt-4 sm:pt-6 flex items-center justify-between gap-3 relative">
+    <div className="flex items-center gap-3">
+      <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
+        <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
       </div>
-=======
-    {/* Header */}
-<div className="px-4 pt-4 sm:pt-6 flex items-center justify-between gap-3 relative">
-  <div className="flex items-center gap-3">
-    <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
-      <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+      <div className="flex flex-col text-center sm:text-left">
+        <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
+          VoiceMate Pulse
+        </h1>
+        <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+          Live Voice Demo – Tap Connect 👇🏼 to Begin
+        </p>
+        <p className="text-sm text-gray-400 mt-0.5">
+          Enjoy 3 minutes on us!
+        </p>
+      </div>
     </div>
-    <div className="flex flex-col text-center sm:text-left">
-      <h1 className="text-lg sm:text-xl font-semibold leading-tight text-gray-800">
-        VoiceMate Pulse
-      </h1>
-      <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-        Live Voice Demo – Tap Connect 👇🏼 to Begin
-      </p>
-      <p className="text-sm text-gray-400 mt-0.5">
-        Enjoy a couple of minutes on us!
-      </p>
-    </div>
+
+    {/* Countdown Timer */}
+    {sessionStatus === "CONNECTED" && (
+      <div className="text-sm sm:text-base font-semibold text-gray-800 pr-2">
+        ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
+      </div>
+    )}
   </div>
 
-  {/* Countdown Timer */}
-  {sessionStatus === "CONNECTED" && (
-    <div className="text-sm sm:text-base font-semibold text-gray-800 pr-2">
-      ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
-    </div>
-  )}
-</div>
 
->>>>>>> 10316a1 (Add session timer and auto-disconnect after 3 minutes)
+
 
       {/* Transcript + Logs with Resizer */}
       <div className="flex-grow flex relative overflow-hidden pb-24">
