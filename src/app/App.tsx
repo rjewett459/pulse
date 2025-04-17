@@ -138,34 +138,38 @@ function App() {
   };
 
   const updateSession = (shouldTriggerResponse = false) => {
-    sendClientEvent({ type: "input_audio_buffer.clear" });
+  sendClientEvent({ type: "input_audio_buffer.clear" });
 
-    const sessionStartEvent = {
-      type: "session.update",
-      session: {
-        modalities: ["text", "audio"],
-        instructions: "VoiceMate instructions here...",
-        voice: "sage",
-        input_audio_format: "pcm16",
-        output_audio_format: "pcm16",
-        input_audio_transcription: { model: "whisper-1" },
-        turn_detection: {
-          type: "server_vad",
-          threshold: 0.5,
-          prefix_padding_ms: 300,
-          silence_duration_ms: 200,
-          create_response: true,
-        },
+  const sessionStartEvent = {
+    type: "session.update",
+    session: {
+      modalities: ["text", "audio"],
+      instructions: "VoiceMate instructions here...",
+      voice: "sage",
+      input_audio_format: "pcm16",
+      output_audio_format: "pcm16",
+      input_audio_transcription: { model: "whisper-1" },
+      turn_detection: {
+        type: "server_vad",
+        threshold: 0.5,
+        prefix_padding_ms: 300,
+        silence_duration_ms: 200,
+        create_response: true,
       },
-    };
-
-    if (dcRef.current?.readyState === "open") {
-      dcRef.current.send(JSON.stringify(sessionStartEvent));
-    }
-
-    sendClientEvent(sessionStartEvent);
-    if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
+    },
   };
+
+  if (dcRef.current?.readyState === "open") {
+    dcRef.current.send(JSON.stringify(sessionStartEvent));
+  }
+
+  sendClientEvent(sessionStartEvent);
+
+  if (shouldTriggerResponse) {
+    sendSimulatedUserMessage("Hi there, go ahead and introduce yourself.");
+  }
+};
+
 
   const sendSimulatedUserMessage = (text: string) => {
     const id = uuidv4().slice(0, 32);
