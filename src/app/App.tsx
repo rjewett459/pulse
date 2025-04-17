@@ -140,11 +140,11 @@ function App() {
   const updateSession = (shouldTriggerResponse = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
 
-    const sessionStartEvent = {
+ const sessionStartEvent = {
   type: "session.update",
   session: {
     modalities: ["text", "audio"],
-      instructions: `Affect/personality: A cheerful guide
+    instructions: `Affect/personality: A cheerful guide
 
 Tone: Friendly, clear, and reassuring, creating a calm atmosphere and making the listener feel confident and comfortable.
 
@@ -167,11 +167,16 @@ Emotion: Warm and supportive, conveying empathy and care, ensuring the listener 
   },
 };
 
-    dcRef.current?.send(JSON.stringify(sessionStartEvent)); // ✅ FIXED
-    console.log("Sending session update:", sessionStartEvent);
-    sendClientEvent(sessionStartEvent);
-    if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
-  };
+// ✅ Send safely if data channel is ready
+if (dcRef.current?.readyState === "open") {
+  dcRef.current.send(JSON.stringify(sessionStartEvent));
+} else {
+  console.warn("Tried to send but data channel isn't open yet.");
+}
+
+console.log("Sending session update:", sessionStartEvent);
+sendClientEvent(sessionStartEvent); // still use your existing helper
+if (shouldTriggerResponse) sendSimulatedUserMessage("hi");
 
   const sendSimulatedUserMessage = (text: string) => {
     const id = uuidv4().slice(0, 32);
