@@ -41,16 +41,6 @@ function Events({ isExpanded }: EventsProps) {
       >
         {isExpanded && (
           <>
-            {/* Close Logs hidden on mobile */}
-            <div className="hidden md:flex justify-end px-4 pt-3">
-              <button
-                onClick={() => toggleExpand("")}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Close Logs ✖
-              </button>
-            </div>
-
             {/* Logs Header */}
             <div className="font-semibold px-4 py-3 sticky top-0 z-10 text-base border-b bg-white">
               Logs
