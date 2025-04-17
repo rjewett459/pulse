@@ -11,6 +11,8 @@ export interface TranscriptProps {
   setUserText: (val: string) => void;
   onSendMessage: () => void;
   canSend: boolean;
+  transcriptWidth: number; // 👈 add this
+  setTranscriptWidth: (val: number) => void; // 👈 and this
 }
 
 function Transcript({
