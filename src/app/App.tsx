@@ -209,19 +209,19 @@ function App() {
       </div>
 
       {/* Bottom Toolbar (ALWAYS VISIBLE) */}
-      <div className="fixed bottom-0 left-0 w-full z-40 bg-white border-t border-gray-300">
-        <BottomToolbar
-          sessionStatus={sessionStatus}
-          onToggleConnection={onToggleConnection}
-          isPTTUserSpeaking={isPTTUserSpeaking}
-          handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-          handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-          isEventsPaneExpanded={isEventsPaneExpanded}
-          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-        />
-      </div>
+     <div className="fixed bottom-0 left-0 w-full z-[9999] bg-white border-t border-gray-300">
+  <BottomToolbar
+    sessionStatus={sessionStatus}
+    onToggleConnection={onToggleConnection}
+    isPTTUserSpeaking={isPTTUserSpeaking}
+    handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
+    handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
+    isEventsPaneExpanded={isEventsPaneExpanded}
+    setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+    isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+    setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+  />
+</div>
 
     </div>
   </>
