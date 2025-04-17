@@ -168,7 +168,7 @@ function App() {
   return (
   <>
     {/* Header Section */}
-    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800">
+    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800 relative">
       {/* Header */}
       <div className="px-4 pt-4 sm:pt-6 flex items-center gap-3">
         <div onClick={() => window.location.reload()} style={{ cursor: "pointer" }}>
@@ -187,25 +187,23 @@ function App() {
         </div>
       </div>
 
-      {/* Transcript + Logs */}
+      {/* Transcript + Logs (keep both in the same row for layout) */}
       <div className="flex-grow flex flex-col sm:flex-row gap-2 px-2 sm:px-4 overflow-hidden relative">
-  <Transcript
-    userText={userText}
-    setUserText={setUserText}
-    onSendMessage={handleSendTextMessage}
-    canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-  />
-</div>
+        <Transcript
+          userText={userText}
+          setUserText={setUserText}
+          onSendMessage={handleSendTextMessage}
+          canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+        />
 
-{/* Slide-in logs - outside main flow */}
-<div
-  className={`fixed md:static top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
-    isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
-  } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
->
-  <Events isExpanded={isEventsPaneExpanded} />
-</div>
-
+        {/* Slide-in logs */}
+        <div
+          className={`fixed md:static top-0 right-0 h-full w-3/4 max-w-sm bg-white border-l border-gray-300 z-50 shadow-md transform transition-transform duration-300 ease-in-out ${
+            isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
+          } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
+        >
+          <Events isExpanded={isEventsPaneExpanded} />
+        </div>
       </div>
 
       {/* Bottom Toolbar (ALWAYS VISIBLE) */}
@@ -223,7 +221,7 @@ function App() {
     </div>
   </>
 );
-}
+
 
 
 export default App;
