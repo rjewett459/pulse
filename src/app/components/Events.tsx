@@ -12,7 +12,7 @@ function Events({ isExpanded }: EventsProps) {
   const [prevEventLogs, setPrevEventLogs] = useState<LoggedEvent[]>([]);
   const eventLogsContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const { loggedEvents, toggleExpand } = useEvent();
+  const { loggedEvents, toggleExpand, collapseAllLogs } = useEvent(); // ✅
 
   const getDirectionArrow = (direction: string) => {
     if (direction === "client") return { symbol: "▲", color: "#7f5af0" };
@@ -44,7 +44,7 @@ function Events({ isExpanded }: EventsProps) {
           {/* Mobile Close Button */}
           <div className="md:hidden flex justify-end px-4 pt-3">
             <button
-              onClick={() => toggleExpand(null)} // collapse all logs
+              onClick={() => collapseAllLogs()} // ✅
               className="text-sm text-gray-500 hover:text-gray-700"
             >
               Close Logs ✖

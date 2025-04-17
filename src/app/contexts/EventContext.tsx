@@ -9,6 +9,7 @@ type EventContextValue = {
   logClientEvent: (eventObj: Record<string, any>, eventNameSuffix?: string) => void;
   logServerEvent: (eventObj: Record<string, any>, eventNameSuffix?: string) => void;
   toggleExpand: (id: number | string) => void;
+  collapseAllLogs: () => void; // ✅ NEW
 };
 
 const EventContext = createContext<EventContextValue | undefined>(undefined);
@@ -52,10 +53,13 @@ export const EventProvider: FC<PropsWithChildren> = ({ children }) => {
     );
   };
 
+  const collapseAllLogs: EventContextValue["collapseAllLogs"] = () => {
+    setLoggedEvents((prev) => prev.map(log => ({ ...log, expanded: false })));
+  };
 
   return (
     <EventContext.Provider
-      value={{ loggedEvents, logClientEvent, logServerEvent, toggleExpand }}
+      value={{ loggedEvents, logClientEvent, logServerEvent, toggleExpand, collapseAllLogs }}
     >
       {children}
     </EventContext.Provider>
