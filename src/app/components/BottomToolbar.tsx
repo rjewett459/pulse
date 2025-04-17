@@ -24,9 +24,11 @@ function BottomToolbar({
   isAudioPlaybackEnabled,
   setIsAudioPlaybackEnabled,
 }: BottomToolbarProps) {
-  return (
-  <div className="w-full border-t border-gray-300 bg-white px-4 py-3">
-    <div className="flex justify-between items-center w-full text-sm sm:text-base">
+  
+
+return (
+  <div className="fixed bottom-0 left-0 w-full z-40 bg-white border-t border-gray-300">
+    <div className="flex justify-between items-center px-4 py-3 w-full text-sm sm:text-base">
       <button
         onClick={onToggleConnection}
         className={`px-4 py-2 rounded-full font-semibold text-white ${
