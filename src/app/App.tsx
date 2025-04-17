@@ -137,33 +137,49 @@ function App() {
     setIsPTTUserSpeaking(false);
   };
 
-  const updateSession = (shouldTriggerResponse = false) => {
-  sendClientEvent({ type: "input_audio_buffer.clear" });
+  const updateSession = (shouldTriggerResponse: boolean = false) => {
+  sendClientEvent(
+    { type: "input_audio_buffer.clear" },
+    "clear audio buffer on session update"
+  );
 
-  const sessionStartEvent = {
-    type: "session.update",
-    session: {
-      modalities: ["text", "audio"],
-      instructions: "VoiceMate instructions here...",
-      voice: "sage",
-      input_audio_format: "pcm16",
-      output_audio_format: "pcm16",
-      input_audio_transcription: { model: "whisper-1" },
-      turn_detection: {
+  const currentAgent = selectedAgentConfigSet?.find(
+    (a) => a.name === selectedAgentName
+  );
+
+  const turnDetection = isPTTActive
+    ? null
+    : {
         type: "server_vad",
         threshold: 0.5,
         prefix_padding_ms: 300,
         silence_duration_ms: 200,
         create_response: true,
-      },
+      };
+
+  const instructions =
+    currentAgent?.instructions ||
+    `You are VoiceMate, a cheerful and confident assistant.
+Speak clearly, with warmth and helpfulness. Think of yourself as a smart, supportive sister — not a robot.
+Use natural pauses and convey excitement when appropriate.`;
+
+  const tools = currentAgent?.tools || [];
+
+  const sessionUpdateEvent = {
+    type: "session.update",
+    session: {
+      modalities: ["text", "audio"],
+      instructions,
+      voice: "sage",
+      input_audio_format: "pcm16",
+      output_audio_format: "pcm16",
+      input_audio_transcription: { model: "whisper-1" },
+      turn_detection: turnDetection,
+      tools,
     },
   };
 
-  if (dcRef.current?.readyState === "open") {
-    dcRef.current.send(JSON.stringify(sessionStartEvent));
-  }
-
-  sendClientEvent(sessionStartEvent);
+  sendClientEvent(sessionUpdateEvent);
 
   if (shouldTriggerResponse) {
     sendSimulatedUserMessage("Hi there, go ahead and introduce yourself.");
