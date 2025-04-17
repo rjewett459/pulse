@@ -147,7 +147,7 @@ function App() {
     (a) => a.name === selectedAgentName
   );
 
-  cconst turnDetection = {
+  const turnDetection = {
   type: "server_vad",
   threshold: 0.5,
   prefix_padding_ms: 300,
