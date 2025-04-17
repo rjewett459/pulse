@@ -164,10 +164,6 @@ Emotion: Warm and supportive, conveying empathy and care, ensuring the listener 
     sendClientEvent({ type: "response.create" });
   };
 
-  const connectToRealtime = async () => {
-  if (sessionStatus !== "DISCONNECTED") return;
-  setSessionStatus("CONNECTING");
-
   try {
     const EPHEMERAL_KEY = await fetchEphemeralKey();
     if (!EPHEMERAL_KEY) return;
