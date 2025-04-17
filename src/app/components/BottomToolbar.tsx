@@ -3,7 +3,6 @@ import { SessionStatus } from "@/app/types";
 
 interface BottomToolbarProps {
   sessionStatus: SessionStatus;
-  onToggleConnection: () => void;
   isPTTUserSpeaking: boolean;
   handleTalkButtonDown: () => void;
   handleTalkButtonUp: () => void;
