@@ -25,7 +25,15 @@ function App() {
   const dcRef = useRef<RTCDataChannel | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>("DISCONNECTED");
-  const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false); // Logs default to hidden
+  const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false);
+  const [userText, setUserText] = useState<string>("");
+  const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
+  const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
+
+  const [transcriptWidth, setTranscriptWidth] = useState<number>(
+    typeof window !== "undefined" ? window.innerWidth * 0.6 : 400
+  );
+default to hidden
   const [userText, setUserText] = useState<string>("");
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
@@ -192,11 +200,15 @@ function App() {
         {/* Left: Transcript */}
         <div className="flex-grow min-w-0 overflow-hidden">
           <Transcript
-            userText={userText}
-            setUserText={setUserText}
-            onSendMessage={handleSendTextMessage}
-            canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-          />
+  userText={userText}
+  setUserText={setUserText}
+  onSendMessage={handleSendTextMessage}
+  canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
+  transcriptWidth={transcriptWidth}
+  setTranscriptWidth={setTranscriptWidth}
+/>
+
+
         </div>
 
         {/* Resizer */}
@@ -232,7 +244,11 @@ function App() {
             isEventsPaneExpanded ? "translate-x-0" : "translate-x-full"
           } md:transform-none md:w-[300px] md:border-0 md:shadow-none`}
         >
-          <Events isExpanded={isEventsPaneExpanded} />
+          <Events
+  isExpanded={isEventsPaneExpanded}
+  transcriptWidth={transcriptWidth}
+  setTranscriptWidth={setTranscriptWidth}
+/>
         </div>
       </div>
 
