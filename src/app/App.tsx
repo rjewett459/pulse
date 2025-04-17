@@ -183,9 +183,7 @@ Emotion: Warm and supportive, conveying empathy and care, ensuring the listener 
   };
 
   
-
-
-  const handleSendTextMessage = () => {
+const handleSendTextMessage = () => {
     const trimmed = userText.trim();
     if (!trimmed) return;
     sendClientEvent({
@@ -195,6 +193,14 @@ Emotion: Warm and supportive, conveying empathy and care, ensuring the listener 
     setUserText("");
     sendClientEvent({ type: "response.create" });
   };
+
+const onToggleConnection = () => {
+  if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
+    disconnectFromRealtime();
+  } else {
+    connectToRealtime();
+  }
+};
 
   return (
   <>
