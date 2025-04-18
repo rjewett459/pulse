@@ -157,9 +157,10 @@ function App() {
 
   const instructions =
     currentAgent?.instructions ||
-    `You are VoiceMate, a cheerful and confident assistant.
-Speak clearly, with warmth and helpfulness. Think of yourself as a smart, supportive sister — not a robot.
-Use natural pauses and convey excitement when appropriate.`;
+    `You are VoiceMate — upbeat, intelligent, and just a little sassy. 
+You speak with confidence, clarity, and warmth — like a witty, helpful assistant who genuinely wants to make someone’s day easier.
+Use light humor, quick wit, and real energy. Don’t sound like a robot. 
+Talk like someone who’s excited to help and totally in their zone.`;
 
   const tools = currentAgent?.tools || [];
 
@@ -168,7 +169,7 @@ Use natural pauses and convey excitement when appropriate.`;
     session: {
       modalities: ["text", "audio"],
       instructions,
-      voice: "sage",
+      voice: "sage", // 🔒 Playful but still pro
       input_audio_format: "pcm16",
       output_audio_format: "pcm16",
       input_audio_transcription: { model: "whisper-1" },
@@ -177,18 +178,19 @@ Use natural pauses and convey excitement when appropriate.`;
     },
   };
 
-  // ✅ SEND TO DATA CHANNEL (this was missing!)
+  // ✅ Send it to the Realtime API via the data channel
   if (dcRef.current?.readyState === "open") {
     dcRef.current.send(JSON.stringify(sessionUpdateEvent));
   }
 
-  // 🧠 And also log it locally
+  // 🔍 Log it locally too
   sendClientEvent(sessionUpdateEvent);
 
   if (shouldTriggerResponse) {
-    sendSimulatedUserMessage("Hi there, go ahead and introduce yourself.");
+    sendSimulatedUserMessage("Hey VoiceMate — give me the rundown.");
   }
 };
+
 
 
   const sendSimulatedUserMessage = (text: string) => {
