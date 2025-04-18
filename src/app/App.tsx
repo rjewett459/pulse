@@ -31,20 +31,21 @@ function App() {
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
-  const handleServerEventRef = useHandleServerEvent({
-    setSessionStatus,
-    selectedAgentName,
-    selectedAgentConfigSet,
-    sendClientEvent,
-    setSelectedAgentName,
-  });
-
   const sendClientEvent = (eventObj, eventNameSuffix = "") => {
-    if (dcRef.current && dcRef.current.readyState === "open") {
-      logClientEvent(eventObj, eventNameSuffix);
-      dcRef.current.send(JSON.stringify(eventObj));
-    }
-  };
+  if (dcRef.current && dcRef.current.readyState === "open") {
+    logClientEvent(eventObj, eventNameSuffix);
+    dcRef.current.send(JSON.stringify(eventObj));
+  }
+};
+
+const handleServerEventRef = useHandleServerEvent({
+  setSessionStatus,
+  selectedAgentName,
+  selectedAgentConfigSet,
+  sendClientEvent,
+  setSelectedAgentName,
+});
+
 
   const connectToRealtime = async () => {
     if (sessionStatus !== "DISCONNECTED") return;
