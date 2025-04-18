@@ -20,8 +20,8 @@ function App() {
   const [showShareModal, setShowShareModal] = useState(false);
   const timerRef = useRef(null);
 
-  const dcRef = useRef(null);
-  const pcRef = useRef(null);
+  const dcRef = useRef<RTCDataChannel | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
 
