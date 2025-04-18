@@ -107,31 +107,38 @@ function App() {
   const updateSession = (shouldTrigger = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
 
-    sendClientEvent({
-      type: "session.update",
-      session: {
-        modalities: ["text", "audio"],
-        instructions:
-          "You are Sage — a warm, expressive assistant who speaks clearly, confidently, and emotionally like a wise older sister.",
-        voice: "sage", // ✅ This is the only voice that will be used
-        input_audio_format: "pcm16",
-        output_audio_format: "pcm16",
-        input_audio_transcription: { model: "whisper-1" },
-        turn_detection: {
-          type: "server_vad",
-          threshold: 0.5,
-          prefix_padding_ms: 300,
-          silence_duration_ms: 200,
-          create_response: true,
-        },
-        tools: [],
-      },
-    });
+    const updateSession = (shouldTrigger = false) => {
+  sendClientEvent({ type: "input_audio_buffer.clear" });
 
-    if (shouldTrigger) {
-      sendSimulatedUserMessage("Hey there, show me the magic.");
-    }
-  };
+  const agent = selectedAgentConfigSet?.find((a) => a.name === selectedAgentName);
+
+  sendClientEvent({
+    type: "session.update",
+    session: {
+      modalities: ["text", "audio"],
+      instructions:
+        agent?.instructions ||
+        "You are Sage — a warm, expressive assistant who speaks clearly, confidently, and emotionally like a wise older sister.",
+      voice: agent?.name || "sage",
+      input_audio_format: "pcm16",
+      output_audio_format: "pcm16",
+      input_audio_transcription: { model: "whisper-1" },
+      turn_detection: {
+        type: "server_vad",
+        threshold: 0.5,
+        prefix_padding_ms: 300,
+        silence_duration_ms: 200,
+        create_response: true,
+      },
+      tools: agent?.tools || [],
+    },
+  });
+
+  if (shouldTrigger) {
+    sendSimulatedUserMessage("Hey there, show me the magic.");
+  }
+};
+
 
   useEffect(() => {
     const agents = allAgentSets["simpleExample"];
@@ -169,15 +176,20 @@ function App() {
 
       <div className="flex justify-center items-center flex-col py-6">
         <motion.div
-          className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
-          animate={
-            sessionStatus === "CONNECTED"
-              ? { scale: [1, 1.05, 1], opacity: 1 }
-              : { scale: 1, opacity: 0.4 }
-          }
-          transition={{ duration: 1.2, repeat: Infinity }}
-          onClick={onOrbClick}
-        />
+  className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
+  animate={
+    sessionStatus === "CONNECTED"
+      ? { scale: [1, 1.05, 1], opacity: 1 }
+      : { scale: 1, opacity: 0.4 }
+  }
+  transition={
+    sessionStatus === "CONNECTED"
+      ? { duration: 1.2, repeat: Infinity }
+      : { duration: 0 }
+  }
+  onClick={onOrbClick}
+/>
+
         <p className="text-sm text-gray-400 mt-2">
           {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
           {sessionStatus === "CONNECTING" && "⏳ Connecting..."}
