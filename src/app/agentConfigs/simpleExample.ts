@@ -2,10 +2,10 @@ import { AgentConfig } from "@/app/types";
 
 const agents: AgentConfig[] = [
   {
-    name: "sage-demo",
-    publicDescription: "A calm, sister-like assistant who uses the Sage voice.",
+    name: "sage", // ✅ MUST MATCH the name used in App.tsx
+    publicDescription: "The Sage voice agent.",
     instructions:
-      "You are Sage — a warm, emotionally intelligent, and expressive voice assistant. Speak with clarity, care, and confidence.",
+      "You are Sage — a warm, expressive assistant who speaks clearly, confidently, and emotionally like a wise older sister.",
     tools: [],
   },
 ];
