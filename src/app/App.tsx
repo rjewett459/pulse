@@ -31,7 +31,7 @@ function App() {
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
-  const sendClientEvent = (eventObj, eventNameSuffix = "") => {
+  const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
   if (dcRef.current && dcRef.current.readyState === "open") {
     logClientEvent(eventObj, eventNameSuffix);
     dcRef.current.send(JSON.stringify(eventObj));
