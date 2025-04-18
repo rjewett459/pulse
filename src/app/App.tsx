@@ -20,11 +20,9 @@ function App() {
   const [showShareModal, setShowShareModal] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-
   const dcRef = useRef<RTCDataChannel | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
-
 
   const [userText, setUserText] = useState("");
   const [transcriptWidth, setTranscriptWidth] = useState(400);
@@ -33,9 +31,9 @@ function App() {
   const { logClientEvent } = useEvent();
 
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
-    if (dcRef.current && (dcRef.current as RTCDataChannel).readyState === "open") {
+    if (dcRef.current?.readyState === "open") {
       logClientEvent(eventObj, eventNameSuffix);
-      (dcRef.current as RTCDataChannel).send(JSON.stringify(eventObj));
+      dcRef.current.send(JSON.stringify(eventObj));
     }
   };
 
@@ -57,7 +55,7 @@ function App() {
       if (!client_secret?.value) return setSessionStatus("DISCONNECTED");
 
       if (!audioElementRef.current) {
-        audioElementRef.current = document.createElement("audio") as HTMLAudioElement;
+        audioElementRef.current = document.createElement("audio");
       }
       audioElementRef.current.autoplay = true;
 
@@ -72,7 +70,7 @@ function App() {
       timerRef.current = setInterval(() => {
         setTimer((prev) => {
           if (prev <= 1) {
-            clearInterval(timerRef.current);
+            if (timerRef.current) clearInterval(timerRef.current);
             disconnectFromRealtime();
             setShowShareModal(true);
             return 0;
@@ -174,10 +172,7 @@ function App() {
         <motion.div
           className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
           animate={{
-            scale:
-              sessionStatus === "DISCONNECTED"
-                ? 1
-                : [1, 1.05, 1],
+            scale: sessionStatus === "DISCONNECTED" ? 1 : [1, 1.05, 1],
             opacity: sessionStatus === "DISCONNECTED" ? 0.4 : 1,
           }}
           transition={{ duration: 1.2, repeat: Infinity }}
