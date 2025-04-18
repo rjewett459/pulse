@@ -4,47 +4,33 @@ import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
 import { motion } from "framer-motion";
-
-import Transcript from "./components/Transcript";
-import Events from "./components/Events";
-import BottomToolbar from "./components/BottomToolbar";
-
-import { AgentConfig, SessionStatus } from "@/app/types";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 import { createRealtimeConnection } from "./lib/realtimeConnection";
 import { allAgentSets } from "@/app/agentConfigs";
+import Transcript from "./components/Transcript";
+import SharePulse from "./components/SharePulse";
 
 function App() {
-  const [timer, setTimer] = useState<number>(180);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
+  const [selectedAgentName, setSelectedAgentName] = useState("");
+  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState(null);
+  const [timer, setTimer] = useState(180);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const timerRef = useRef(null);
+
+  const dcRef = useRef(null);
+  const pcRef = useRef(null);
+  const audioElementRef = useRef(null);
+
+  const [userText, setUserText] = useState("");
+  const [transcriptWidth, setTranscriptWidth] = useState(400);
+  const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState(false);
+  const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState(true);
 
   const { addTranscriptMessage, addTranscriptBreadcrumb } = useTranscript();
   const { logClientEvent } = useEvent();
-
-  const [selectedAgentName, setSelectedAgentName] = useState<string>("");
-  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const dcRef = useRef<RTCDataChannel | null>(null);
-  const audioElementRef = useRef<HTMLAudioElement | null>(null);
-  const [sessionStatus, setSessionStatus] = useState<SessionStatus>("DISCONNECTED");
-  const [userText, setUserText] = useState<string>("");
-  const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
-  const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
-
-  const [transcriptWidth, setTranscriptWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth * 0.6 : 400);
-  const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false);
-
-  cconsole.log("🔥 About to send session update:", sessionUpdateEvent);
-if (dcRef.current?.readyState === "open") {
-  dcRef.current.send(JSON.stringify(sessionUpdateEvent));
-  console.log("✅ Sent session update over data channel");
-} else {
-  console.warn("⚠️ Data channel not open — session update not sent");
-}
-
-  };
 
   const handleServerEventRef = useHandleServerEvent({
     setSessionStatus,
@@ -54,151 +40,62 @@ if (dcRef.current?.readyState === "open") {
     setSelectedAgentName,
   });
 
-  useEffect(() => {
-    const agents = allAgentSets["simpleExample"];
-    const agentKeyToUse = agents[0]?.name || "";
-    setSelectedAgentName(agentKeyToUse);
-    setSelectedAgentConfigSet(agents);
-  }, []);
-
-  useEffect(() => {
-    if (selectedAgentName && sessionStatus === "DISCONNECTED") {
-      connectToRealtime();
+  const sendClientEvent = (eventObj, eventNameSuffix = "") => {
+    if (dcRef.current && dcRef.current.readyState === "open") {
+      logClientEvent(eventObj, eventNameSuffix);
+      dcRef.current.send(JSON.stringify(eventObj));
     }
-  }, [selectedAgentName]);
-
-  useEffect(() => {
-    if (sessionStatus === "CONNECTED" && selectedAgentConfigSet && selectedAgentName) {
-      const currentAgent = selectedAgentConfigSet.find(a => a.name === selectedAgentName);
-      addTranscriptBreadcrumb(`Agent: ${selectedAgentName}`, currentAgent);
-      updateSession(true);
-    }
-  }, [selectedAgentConfigSet, selectedAgentName, sessionStatus]);
-
-  const fetchEphemeralKey = async (): Promise<string | null> => {
-    const tokenResponse = await fetch("/api/session");
-    const data = await tokenResponse.json();
-    if (!data.client_secret?.value) {
-      setSessionStatus("DISCONNECTED");
-      return null;
-    }
-    return data.client_secret.value;
   };
 
   const connectToRealtime = async () => {
-  if (sessionStatus !== "DISCONNECTED") return;
-  setSessionStatus("CONNECTING");
+    if (sessionStatus !== "DISCONNECTED") return;
+    setSessionStatus("CONNECTING");
 
-  try {
-    const EPHEMERAL_KEY = await fetchEphemeralKey();
-    if (!EPHEMERAL_KEY) return;
+    try {
+      const tokenRes = await fetch("/api/session");
+      const { client_secret } = await tokenRes.json();
+      if (!client_secret?.value) return setSessionStatus("DISCONNECTED");
 
-   if (!audioElementRef.current) {
-  audioElementRef.current = document.createElement("audio");
-} else {
-  audioElementRef.current.src = ""; // Clear old audio if exists
-}
-audioElementRef.current.autoplay = isAudioPlaybackEnabled;
+      if (!audioElementRef.current) {
+        audioElementRef.current = document.createElement("audio");
+      }
+      audioElementRef.current.autoplay = isAudioPlaybackEnabled;
 
+      const { pc, dc } = await createRealtimeConnection(client_secret.value, audioElementRef);
+      pcRef.current = pc;
+      dcRef.current = dc;
+      dc.addEventListener("message", (e) => handleServerEventRef.current(JSON.parse(e.data)));
 
-    const { pc, dc } = await createRealtimeConnection(EPHEMERAL_KEY, audioElementRef);
-    pcRef.current = pc;
-    dcRef.current = dc;
+      setSessionStatus("CONNECTED");
+      updateSession(true);
 
-    dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
-
-    setSessionStatus("CONNECTED");
-
-    updateSession(true); // ✅ Optional: trigger greeting on connect
-
-    if (timerRef.current) clearInterval(timerRef.current);
-    setTimer(180);
-    timerRef.current = setInterval(() => {
-      setTimer(prev => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!);
-          disconnectFromRealtime();
-          alert("⏰ Time's up! Thanks for trying VoiceMate Pulse.");
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-  } catch {
-    setSessionStatus("DISCONNECTED");
-  }
-};
-
+      timerRef.current = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            disconnectFromRealtime();
+            setShowShareModal(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch {
+      setSessionStatus("DISCONNECTED");
+    }
+  };
 
   const disconnectFromRealtime = () => {
     if (pcRef.current) {
-      pcRef.current.getSenders().forEach(sender => sender.track?.stop());
+      pcRef.current.getSenders().forEach((s) => s.track?.stop());
       pcRef.current.close();
-      pcRef.current = null;
     }
+    pcRef.current = null;
     dcRef.current = null;
     setSessionStatus("DISCONNECTED");
-    setIsPTTUserSpeaking(false);
   };
 
-  const updateSession = (shouldTriggerResponse: boolean = false) => {
-  sendClientEvent(
-    { type: "input_audio_buffer.clear" },
-    "clear audio buffer on session update"
-  );
-
-  const currentAgent = selectedAgentConfigSet?.find(
-    (a) => a.name === selectedAgentName
-  );
-
-  const turnDetection = {
-    type: "server_vad",
-    threshold: 0.5,
-    prefix_padding_ms: 300,
-    silence_duration_ms: 200,
-    create_response: true,
-  };
-
-  const instructions =
-    currentAgent?.instructions ||
-    `You are VoiceMate — upbeat, intelligent, and just a little sassy. 
-You speak with confidence, clarity, and warmth — like a witty, helpful assistant who genuinely wants to make someone’s day easier.
-Use light humor, quick wit, and real energy. Don’t sound like a robot. 
-Talk like someone who’s excited to help and totally in their zone.`;
-
-  const tools = currentAgent?.tools || [];
-
-  const sessionUpdateEvent = {
-    type: "session.update",
-    session: {
-      modalities: ["text", "audio"],
-      instructions,
-      voice: "sage", // 🔒 Playful but still pro
-      input_audio_format: "pcm16",
-      output_audio_format: "pcm16",
-      input_audio_transcription: { model: "whisper-1" },
-      turn_detection: turnDetection,
-      tools,
-    },
-  };
-
-  // ✅ Send it to the Realtime API via the data channel
-  if (dcRef.current?.readyState === "open") {
-    dcRef.current.send(JSON.stringify(sessionUpdateEvent));
-  }
-
-  // 🔍 Log it locally too
-  sendClientEvent(sessionUpdateEvent);
-
-  if (shouldTriggerResponse) {
-    sendSimulatedUserMessage("Hey VoiceMate — give me the rundown.");
-  }
-};
-
-
-
-  const sendSimulatedUserMessage = (text: string) => {
+  const sendSimulatedUserMessage = (text) => {
     const id = uuidv4().slice(0, 32);
     addTranscriptMessage(id, "user", text, true);
     sendClientEvent({
@@ -208,33 +105,62 @@ Talk like someone who’s excited to help and totally in their zone.`;
     sendClientEvent({ type: "response.create" });
   };
 
-  const handleSendTextMessage = () => {
-    const trimmed = userText.trim();
-    if (!trimmed) return;
+  const updateSession = (shouldTrigger = false) => {
+    sendClientEvent({ type: "input_audio_buffer.clear" });
+    const agent = selectedAgentConfigSet?.find((a) => a.name === selectedAgentName);
+
     sendClientEvent({
-      type: "conversation.item.create",
-      item: { type: "message", role: "user", content: [{ type: "input_text", text: trimmed }] },
+      type: "session.update",
+      session: {
+        modalities: ["text", "audio"],
+        instructions:
+          agent?.instructions ||
+          "You're Sage — friendly, expressive, sister-like AI. Speak warmly, emotionally, and supportively.",
+        voice: "sage",
+        input_audio_format: "pcm16",
+        output_audio_format: "pcm16",
+        input_audio_transcription: { model: "whisper-1" },
+        turn_detection: {
+          type: "server_vad",
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 200,
+          create_response: true,
+        },
+        tools: agent?.tools || [],
+      },
     });
-    setUserText("");
-    sendClientEvent({ type: "response.create" });
+
+    if (shouldTrigger) {
+      sendSimulatedUserMessage("Hey there, show me the magic.");
+    }
   };
 
-const onOrbClick = () => {
-  if (sessionStatus === "DISCONNECTED") {
-    connectToRealtime();
-  } else {
-    disconnectFromRealtime();
-  }
-}; // ✅ clean close of function
+  useEffect(() => {
+    const agents = allAgentSets["simpleExample"];
+    setSelectedAgentName(agents[0]?.name || "");
+    setSelectedAgentConfigSet(agents);
+  }, []);
 
-return ( // ✅ return immediately after — no comma, no empty line, no comment
-  <div className="min-h-screen bg-black text-white flex flex-col">
-     <header className="flex justify-between items-center px-4 pt-4">
+  useEffect(() => {
+    if (selectedAgentName && sessionStatus === "DISCONNECTED") {
+      connectToRealtime();
+    }
+  }, [selectedAgentName]);
+
+  const onOrbClick = () => {
+    if (sessionStatus === "DISCONNECTED") connectToRealtime();
+    else disconnectFromRealtime();
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      <header className="flex justify-between items-center px-4 pt-4">
         <div className="flex items-center gap-3">
           <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
           <div>
             <h1 className="text-xl font-bold">VoiceMate Pulse</h1>
-            <p className="text-sm text-gray-400">Live Voice Demo – Tap the orb 👇🏼</p>
+            <p className="text-sm text-gray-400">Tap the orb to experience Sage ✨</p>
           </div>
         </div>
         {sessionStatus === "CONNECTED" && (
@@ -244,10 +170,9 @@ return ( // ✅ return immediately after — no comma, no empty line, no comment
         )}
       </header>
 
-      {/* ORB UI */}
       <div className="flex justify-center items-center flex-col py-6">
         <motion.div
-          className="w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-pink-600 shadow-2xl cursor-pointer"
+          className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
           animate={{
             scale:
               sessionStatus === "DISCONNECTED"
@@ -255,12 +180,7 @@ return ( // ✅ return immediately after — no comma, no empty line, no comment
                 : isPTTUserSpeaking
                 ? [1, 1.15, 1]
                 : [1, 1.05, 1],
-            opacity:
-              sessionStatus === "DISCONNECTED"
-                ? 0.4
-                : isPTTUserSpeaking
-                ? 1
-                : 0.85,
+            opacity: sessionStatus === "DISCONNECTED" ? 0.4 : 1,
           }}
           transition={{ duration: 1.2, repeat: Infinity }}
           onClick={onOrbClick}
@@ -277,31 +197,16 @@ return ( // ✅ return immediately after — no comma, no empty line, no comment
         <Transcript
           userText={userText}
           setUserText={setUserText}
-          onSendMessage={handleSendTextMessage}
-          canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
-          transcriptWidth={transcriptWidth}
-          setTranscriptWidth={setTranscriptWidth}
-        />
-
-        <Events
-          isExpanded={isEventsPaneExpanded}
+          onSendMessage={() => {}}
+          canSend={false}
           transcriptWidth={transcriptWidth}
           setTranscriptWidth={setTranscriptWidth}
         />
       </div>
 
-      <BottomToolbar
-        isPTTUserSpeaking={isPTTUserSpeaking}
-        handleTalkButtonDown={() => setIsPTTUserSpeaking(true)}
-        handleTalkButtonUp={() => setIsPTTUserSpeaking(false)}
-        isEventsPaneExpanded={isEventsPaneExpanded}
-        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-      />
-    </div> // ✅ closes return
-  );        // ✅ clean
-
+      <SharePulse open={showShareModal} onClose={() => setShowShareModal(false)} />
+    </div>
+  );
 }
 
 export default App;
