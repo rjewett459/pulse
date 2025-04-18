@@ -9,13 +9,14 @@ import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 import { createRealtimeConnection } from "./lib/realtimeConnection";
 import allAgentSets from "@/app/agentConfigs";
+import { AgentConfig } from "@/app/types";
 import Transcript from "./components/Transcript";
 import SharePulse from "./components/SharePulse";
 
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
   const [selectedAgentName, setSelectedAgentName] = useState("");
-  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState(null);
+  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -108,7 +109,7 @@ function App() {
 
   const updateSession = (shouldTrigger = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
-    const agent = selectedAgentConfigSet?.find((a: any) => a.name === selectedAgentName);
+    const agent = selectedAgentConfigSet?.find((a) => a.name === selectedAgentName);
 
     sendClientEvent({
       type: "session.update",
