@@ -72,10 +72,12 @@ function Transcript({
     <div className="flex flex-col flex-1 bg-white/5 backdrop-blur-md min-h-0 rounded-2xl border border-white/10 shadow-lg">
       <div className="relative flex-1 min-h-0">
         <button
-          onClick={handleCopyTranscript}
-          className={`absolute w-20 top-3 right-2 mr-1 z-10 text-sm px-3 py-2 rounded-full bg-gray-200 hover:bg-gray-300`}
-        >
-          {justCopied ? "Copied!" : "Copy"}
+  onClick={handleCopyTranscript}
+  className={`absolute top-3 right-3 z-10 text-sm px-4 py-2 rounded-full font-semibold shadow-md bg-white text-black hover:bg-gray-100 transition`}
+>
+  {justCopied ? "✅ Copied!" : "📋 Copy"}
+</button>
+ed ? "Copied!" : "Copy"}
         </button>
 
         <div
