@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import type { AgentConfig } from "@/app/types"; 
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
@@ -15,7 +16,7 @@ import SharePulse from "./components/SharePulse";
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
   const [selectedAgentName, setSelectedAgentName] = useState("");
-  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState(null);
+  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
