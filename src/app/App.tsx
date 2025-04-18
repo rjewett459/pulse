@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -15,8 +15,8 @@ function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
-
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const dcRef = useRef<RTCDataChannel | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -52,7 +52,7 @@ function App() {
       if (!client_secret?.value) return setSessionStatus("DISCONNECTED");
 
       if (!audioElementRef.current) {
-        audioElementRef.current = document.createElement("audio");
+        audioElementRef.current = document.createElement("audio") as HTMLAudioElement;
       }
       audioElementRef.current.autoplay = true;
 
@@ -62,31 +62,7 @@ function App() {
       dc.addEventListener("message", (e) => handleServerEventRef.current(JSON.parse(e.data)));
 
       setSessionStatus("CONNECTED");
-
-      sendClientEvent({ type: "input_audio_buffer.clear" });
-
-      sendClientEvent({
-        type: "session.update",
-        session: {
-          modalities: ["text", "audio"],
-          voice: "sage", // ✅ LOCKED-IN SAGE VOICE
-          instructions:
-            "You are Sage — a warm, expressive assistant who speaks clearly, confidently, and emotionally like a wise older sister.",
-          input_audio_format: "pcm16",
-          output_audio_format: "pcm16",
-          input_audio_transcription: { model: "whisper-1" },
-          turn_detection: {
-            type: "server_vad",
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 200,
-            create_response: true,
-          },
-          tools: [],
-        },
-      });
-
-      sendSimulatedUserMessage("Hi there, Sage — introduce yourself!");
+      updateSession(true);
 
       timerRef.current = setInterval(() => {
         setTimer((prev) => {
@@ -123,6 +99,39 @@ function App() {
     });
     sendClientEvent({ type: "response.create" });
   };
+
+  const updateSession = (shouldTrigger = false) => {
+    sendClientEvent({ type: "input_audio_buffer.clear" });
+
+    sendClientEvent({
+      type: "session.update",
+      session: {
+        modalities: ["text", "audio"],
+        instructions:
+          "You're Sage — friendly, expressive, sister-like AI. Speak warmly, emotionally, and supportively.",
+        voice: "sage",
+        input_audio_format: "pcm16",
+        output_audio_format: "pcm16",
+        input_audio_transcription: { model: "whisper-1" },
+        turn_detection: {
+          type: "server_vad",
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 200,
+          create_response: true,
+        },
+        tools: [],
+      },
+    });
+
+    if (shouldTrigger) {
+      sendSimulatedUserMessage("Hey there, show me the magic.");
+    }
+  };
+
+  useEffect(() => {
+    connectToRealtime();
+  }, []);
 
   const onOrbClick = () => {
     if (sessionStatus === "DISCONNECTED") connectToRealtime();
