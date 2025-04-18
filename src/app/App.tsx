@@ -1,6 +1,5 @@
 "use client";
 
-import { AgentConfig } from "@/app/types";
 import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
@@ -9,14 +8,11 @@ import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 import { createRealtimeConnection } from "./lib/realtimeConnection";
-import { allAgentSets } from "@/app/agentConfigs";
 import Transcript from "./components/Transcript";
 import SharePulse from "./components/SharePulse";
 
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
-  const [selectedAgentName, setSelectedAgentName] = useState("");
-  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,10 +36,10 @@ function App() {
 
   const handleServerEventRef = useHandleServerEvent({
     setSessionStatus,
-    selectedAgentName,
-    selectedAgentConfigSet,
+    selectedAgentName: "sage-agent",
+    selectedAgentConfigSet: null,
     sendClientEvent,
-    setSelectedAgentName,
+    setSelectedAgentName: () => {},
   });
 
   const connectToRealtime = async () => {
@@ -106,15 +102,12 @@ function App() {
 
   const updateSession = (shouldTrigger = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
-    const agent = selectedAgentConfigSet?.find((a) => a.name === selectedAgentName);
 
     sendClientEvent({
       type: "session.update",
       session: {
         modalities: ["text", "audio"],
-        instructions:
-          agent?.instructions ||
-          "You're Sage — friendly, expressive, sister-like AI. Speak warmly, emotionally, and supportively.",
+        instructions: "You're Sage — friendly, expressive, sister-like AI. Speak warmly, emotionally, and supportively.",
         voice: "sage",
         input_audio_format: "pcm16",
         output_audio_format: "pcm16",
@@ -126,7 +119,7 @@ function App() {
           silence_duration_ms: 200,
           create_response: true,
         },
-        tools: agent?.tools || [],
+        tools: [],
       },
     });
 
@@ -134,18 +127,6 @@ function App() {
       sendSimulatedUserMessage("Hey there, show me the magic.");
     }
   };
-
-  useEffect(() => {
-    const agents = allAgentSets["simpleExample"];
-    setSelectedAgentName(agents[0]?.name || "");
-    setSelectedAgentConfigSet(agents);
-  }, []);
-
-  useEffect(() => {
-    if (selectedAgentName && sessionStatus === "DISCONNECTED") {
-      connectToRealtime();
-    }
-  }, [selectedAgentName]);
 
   const onOrbClick = () => {
     if (sessionStatus === "DISCONNECTED") connectToRealtime();
@@ -172,10 +153,11 @@ function App() {
       <div className="flex justify-center items-center flex-col py-6">
         <motion.div
           className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
-          animate={{
-            scale: sessionStatus === "CONNECTED" ? [1, 1.05, 1] : 1,
-            opacity: sessionStatus === "CONNECTED" ? 1 : 0.4,
-          }}
+          animate={
+            sessionStatus === "CONNECTED"
+              ? { scale: [1, 1.05, 1], opacity: 1 }
+              : { scale: 1, opacity: 0.4 }
+          }
           transition={{ duration: 1.2, repeat: Infinity }}
           onClick={onOrbClick}
         />
