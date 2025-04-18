@@ -1,5 +1,6 @@
 "use client";
 
+import { allAgentSets } from "@/app/agentConfigs";
 import React, { useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
@@ -33,6 +34,13 @@ function App() {
       dcRef.current.send(JSON.stringify(eventObj));
     }
   };
+  
+  const agent = {
+  name: "sage",
+  instructions:
+    "You are Sage — a warm, expressive assistant who speaks clearly, confidently, and emotionally like a wise older sister.",
+  tools: [],
+};
 
   const handleServerEventRef = useHandleServerEvent({
     setSessionStatus,
