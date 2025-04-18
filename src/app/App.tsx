@@ -11,11 +11,12 @@ import { createRealtimeConnection } from "./lib/realtimeConnection";
 import { allAgentSets } from "@/app/agentConfigs";
 import Transcript from "./components/Transcript";
 import SharePulse from "./components/SharePulse";
+import { AgentConfig } from "@/app/types";
 
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
   const [selectedAgentName, setSelectedAgentName] = useState("");
-  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState(null);
+  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -55,7 +56,7 @@ function App() {
       if (!client_secret?.value) return setSessionStatus("DISCONNECTED");
 
       if (!audioElementRef.current) {
-        audioElementRef.current = document.createElement("audio") as HTMLAudioElement;
+        audioElementRef.current = document.createElement("audio");
       }
       audioElementRef.current.autoplay = true;
 
@@ -105,7 +106,7 @@ function App() {
 
   const updateSession = (shouldTrigger = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
-    const agent = selectedAgentConfigSet?.find((a: any) => a.name === selectedAgentName);
+    const agent = selectedAgentConfigSet?.find((a) => a.name === selectedAgentName);
 
     sendClientEvent({
       type: "session.update",
