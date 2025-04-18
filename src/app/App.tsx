@@ -226,9 +226,10 @@ Talk like someone who’s excited to help and totally in their zone.`;
       disconnectFromRealtime();
     }
   };
-
+  
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
+
       <header className="flex justify-between items-center px-4 pt-4">
         <div className="flex items-center gap-3">
           <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
