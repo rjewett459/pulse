@@ -301,7 +301,7 @@ Talk like someone who’s excited to help and totally in their zone.`;
         setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
       />
     </div>
-  );
+    );
 }
 
 export default App;
