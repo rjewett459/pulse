@@ -148,13 +148,12 @@ function App() {
   );
 
   const turnDetection = {
-  type: "server_vad",
-  threshold: 0.5,
-  prefix_padding_ms: 300,
-  silence_duration_ms: 200,
-  create_response: true,
-};
-
+    type: "server_vad",
+    threshold: 0.5,
+    prefix_padding_ms: 300,
+    silence_duration_ms: 200,
+    create_response: true,
+  };
 
   const instructions =
     currentAgent?.instructions ||
@@ -178,6 +177,12 @@ Use natural pauses and convey excitement when appropriate.`;
     },
   };
 
+  // ✅ SEND TO DATA CHANNEL (this was missing!)
+  if (dcRef.current?.readyState === "open") {
+    dcRef.current.send(JSON.stringify(sessionUpdateEvent));
+  }
+
+  // 🧠 And also log it locally
   sendClientEvent(sessionUpdateEvent);
 
   if (shouldTriggerResponse) {
