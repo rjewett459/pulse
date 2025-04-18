@@ -219,18 +219,17 @@ Talk like someone who’s excited to help and totally in their zone.`;
     sendClientEvent({ type: "response.create" });
   };
 
-  const onOrbClick = () => {
-    if (sessionStatus === "DISCONNECTED") {
-      connectToRealtime();
-    } else {
-      disconnectFromRealtime();
-    }
-  };
-  
-  return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+const onOrbClick = () => {
+  if (sessionStatus === "DISCONNECTED") {
+    connectToRealtime();
+  } else {
+    disconnectFromRealtime();
+  }
+}; // ✅ clean close of function
 
-      <header className="flex justify-between items-center px-4 pt-4">
+return ( // ✅ return immediately after — no comma, no empty line, no comment
+  <div className="min-h-screen bg-black text-white flex flex-col">
+     <header className="flex justify-between items-center px-4 pt-4">
         <div className="flex items-center gap-3">
           <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
           <div>
@@ -300,8 +299,9 @@ Talk like someone who’s excited to help and totally in their zone.`;
         isAudioPlaybackEnabled={isAudioPlaybackEnabled}
         setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
       />
-    </div>
-    );
+    </div> // ✅ closes return
+  );        // ✅ clean
+
 }
 
 export default App;
