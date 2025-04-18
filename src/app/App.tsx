@@ -22,7 +22,8 @@ function App() {
 
   const dcRef = useRef(null);
   const pcRef = useRef(null);
-  const audioElementRef = useRef(null);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+
 
   const [userText, setUserText] = useState("");
   const [transcriptWidth, setTranscriptWidth] = useState(400);
