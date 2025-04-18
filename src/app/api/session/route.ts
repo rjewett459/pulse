@@ -12,6 +12,7 @@ export async function GET() {
         },
         body: JSON.stringify({
           model: "gpt-4o-realtime-preview-2024-12-17",
+          voice: "sage", // ✅ this line sets the voice correctly
         }),
       }
     );
@@ -25,3 +26,4 @@ export async function GET() {
     );
   }
 }
+
