@@ -36,11 +36,14 @@ function App() {
   const [transcriptWidth, setTranscriptWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth * 0.6 : 400);
   const [isEventsPaneExpanded, setIsEventsPaneExpanded] = useState<boolean>(false);
 
-  const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
-    if (dcRef.current && dcRef.current.readyState === "open") {
-      logClientEvent(eventObj, eventNameSuffix);
-      dcRef.current.send(JSON.stringify(eventObj));
-    }
+  cconsole.log("🔥 About to send session update:", sessionUpdateEvent);
+if (dcRef.current?.readyState === "open") {
+  dcRef.current.send(JSON.stringify(sessionUpdateEvent));
+  console.log("✅ Sent session update over data channel");
+} else {
+  console.warn("⚠️ Data channel not open — session update not sent");
+}
+
   };
 
   const handleServerEventRef = useHandleServerEvent({
@@ -90,11 +93,13 @@ function App() {
     const EPHEMERAL_KEY = await fetchEphemeralKey();
     if (!EPHEMERAL_KEY) return;
 
-    if (!audioElementRef.current) {
-      audioElementRef.current = document.createElement("audio");
-    }
+   if (!audioElementRef.current) {
+  audioElementRef.current = document.createElement("audio");
+} else {
+  audioElementRef.current.src = ""; // Clear old audio if exists
+}
+audioElementRef.current.autoplay = isAudioPlaybackEnabled;
 
-    audioElementRef.current.autoplay = isAudioPlaybackEnabled;
 
     const { pc, dc } = await createRealtimeConnection(EPHEMERAL_KEY, audioElementRef);
     pcRef.current = pc;
