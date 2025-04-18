@@ -11,7 +11,6 @@ import { createRealtimeConnection } from "./lib/realtimeConnection";
 import { allAgentSets } from "@/app/agentConfigs";
 import Transcript from "./components/Transcript";
 import SharePulse from "./components/SharePulse";
-import { AgentConfig } from "@/app/types";
 
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
@@ -172,11 +171,10 @@ function App() {
       <div className="flex justify-center items-center flex-col py-6">
         <motion.div
           className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
-          animate={
-            sessionStatus === "CONNECTED"
-              ? { scale: [1, 1.05, 1], opacity: 1 }
-              : { scale: 1, opacity: 0.4 }
-          }
+          animate={{
+            scale: sessionStatus === "CONNECTED" ? [1, 1.05, 1] : 1,
+            opacity: sessionStatus === "CONNECTED" ? 1 : 0.4,
+          }}
           transition={{ duration: 1.2, repeat: Infinity }}
           onClick={onOrbClick}
         />
