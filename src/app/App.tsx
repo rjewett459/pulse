@@ -26,10 +26,9 @@ function App() {
 
   const [userText, setUserText] = useState("");
   const [transcriptWidth, setTranscriptWidth] = useState(400);
-  const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState(false);
-  const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState(true);
-
-  const { addTranscriptMessage, addTranscriptBreadcrumb } = useTranscript();
+  const isPTTUserSpeaking = false;
+  const isAudioPlaybackEnabled = true;
+  const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
   const handleServerEventRef = useHandleServerEvent({
