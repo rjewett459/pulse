@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import type { AgentConfig } from "@/app/types"; 
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
@@ -16,7 +15,7 @@ import SharePulse from "./components/SharePulse";
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
   const [selectedAgentName, setSelectedAgentName] = useState("");
-  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
+  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState(null);
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -32,7 +31,7 @@ function App() {
   const { logClientEvent } = useEvent();
 
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
-    if (dcRef.current?.readyState === "open") {
+    if (dcRef.current && dcRef.current.readyState === "open") {
       logClientEvent(eventObj, eventNameSuffix);
       dcRef.current.send(JSON.stringify(eventObj));
     }
@@ -56,7 +55,7 @@ function App() {
       if (!client_secret?.value) return setSessionStatus("DISCONNECTED");
 
       if (!audioElementRef.current) {
-        audioElementRef.current = document.createElement("audio");
+        audioElementRef.current = document.createElement("audio") as HTMLAudioElement;
       }
       audioElementRef.current.autoplay = true;
 
@@ -71,7 +70,7 @@ function App() {
       timerRef.current = setInterval(() => {
         setTimer((prev) => {
           if (prev <= 1) {
-            if (timerRef.current) clearInterval(timerRef.current);
+            clearInterval(timerRef.current!);
             disconnectFromRealtime();
             setShowShareModal(true);
             return 0;
@@ -106,7 +105,7 @@ function App() {
 
   const updateSession = (shouldTrigger = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
-    const agent = selectedAgentConfigSet?.find((a) => a.name === selectedAgentName);
+    const agent = selectedAgentConfigSet?.find((a: any) => a.name === selectedAgentName);
 
     sendClientEvent({
       type: "session.update",
@@ -172,10 +171,11 @@ function App() {
       <div className="flex justify-center items-center flex-col py-6">
         <motion.div
           className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
-          animate={{
-            scale: sessionStatus === "DISCONNECTED" ? 1 : [1, 1.05, 1],
-            opacity: sessionStatus === "DISCONNECTED" ? 0.4 : 1,
-          }}
+          animate={
+            sessionStatus === "CONNECTED"
+              ? { scale: [1, 1.05, 1], opacity: 1 }
+              : { scale: 1, opacity: 0.4 }
+          }
           transition={{ duration: 1.2, repeat: Infinity }}
           onClick={onOrbClick}
         />
