@@ -8,7 +8,7 @@ import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 import { createRealtimeConnection } from "./lib/realtimeConnection";
-import { allAgentSets } from "@/app/agentConfigs";
+import allAgentSets from "@/app/agentConfigs";
 import Transcript from "./components/Transcript";
 import SharePulse from "./components/SharePulse";
 
