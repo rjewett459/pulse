@@ -20,32 +20,30 @@ function App() {
   const [showShareModal, setShowShareModal] = useState(false);
   const timerRef = useRef(null);
 
-  const dcRef = useRef<RTCDataChannel | null>(null);
+  const dcRef = useRef(null);
   const pcRef = useRef(null);
   const audioElementRef = useRef(null);
 
   const [userText, setUserText] = useState("");
   const [transcriptWidth, setTranscriptWidth] = useState(400);
-  const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState(false);
-  const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState(true);
-  const { addTranscriptMessage, addTranscriptBreadcrumb } = useTranscript();
+
+  const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
-  if (dcRef.current && dcRef.current.readyState === "open") {
-    logClientEvent(eventObj, eventNameSuffix);
-    dcRef.current.send(JSON.stringify(eventObj));
-  }
-};
+    if (dcRef.current && (dcRef.current as RTCDataChannel).readyState === "open") {
+      logClientEvent(eventObj, eventNameSuffix);
+      (dcRef.current as RTCDataChannel).send(JSON.stringify(eventObj));
+    }
+  };
 
-const handleServerEventRef = useHandleServerEvent({
-  setSessionStatus,
-  selectedAgentName,
-  selectedAgentConfigSet,
-  sendClientEvent,
-  setSelectedAgentName,
-});
-
+  const handleServerEventRef = useHandleServerEvent({
+    setSessionStatus,
+    selectedAgentName,
+    selectedAgentConfigSet,
+    sendClientEvent,
+    setSelectedAgentName,
+  });
 
   const connectToRealtime = async () => {
     if (sessionStatus !== "DISCONNECTED") return;
@@ -57,9 +55,9 @@ const handleServerEventRef = useHandleServerEvent({
       if (!client_secret?.value) return setSessionStatus("DISCONNECTED");
 
       if (!audioElementRef.current) {
-        audioElementRef.current = document.createElement("audio");
+        audioElementRef.current = document.createElement("audio") as HTMLAudioElement;
       }
-      audioElementRef.current.autoplay = isAudioPlaybackEnabled;
+      audioElementRef.current.autoplay = true;
 
       const { pc, dc } = await createRealtimeConnection(client_secret.value, audioElementRef);
       pcRef.current = pc;
@@ -95,7 +93,7 @@ const handleServerEventRef = useHandleServerEvent({
     setSessionStatus("DISCONNECTED");
   };
 
-  const sendSimulatedUserMessage = (text) => {
+  const sendSimulatedUserMessage = (text: string) => {
     const id = uuidv4().slice(0, 32);
     addTranscriptMessage(id, "user", text, true);
     sendClientEvent({
@@ -177,8 +175,6 @@ const handleServerEventRef = useHandleServerEvent({
             scale:
               sessionStatus === "DISCONNECTED"
                 ? 1
-                : isPTTUserSpeaking
-                ? [1, 1.15, 1]
                 : [1, 1.05, 1],
             opacity: sessionStatus === "DISCONNECTED" ? 0.4 : 1,
           }}
@@ -188,8 +184,7 @@ const handleServerEventRef = useHandleServerEvent({
         <p className="text-sm text-gray-400 mt-2">
           {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
           {sessionStatus === "CONNECTING" && "⏳ Connecting..."}
-          {sessionStatus === "CONNECTED" && isPTTUserSpeaking && "🎙️ Listening..."}
-          {sessionStatus === "CONNECTED" && !isPTTUserSpeaking && "🤔 Thinking..."}
+          {sessionStatus === "CONNECTED" && "🤔 Thinking..."}
         </p>
       </div>
 
