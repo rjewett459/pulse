@@ -1,4 +1,4 @@
-"use-client";
+"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -11,8 +11,8 @@ export interface TranscriptProps {
   setUserText: (val: string) => void;
   onSendMessage: () => void;
   canSend: boolean;
-  transcriptWidth: number; // 👈 add this
-  setTranscriptWidth: (val: number) => void; // 👈 and this
+  transcriptWidth: number;
+  setTranscriptWidth: (val: number) => void;
 }
 
 function Transcript({
@@ -50,7 +50,6 @@ function Transcript({
     setPrevLogs(transcriptItems);
   }, [transcriptItems]);
 
-  // Autofocus on text box input on load
   useEffect(() => {
     if (canSend && inputRef.current) {
       inputRef.current.focus();
@@ -72,12 +71,10 @@ function Transcript({
     <div className="flex flex-col flex-1 bg-white/5 backdrop-blur-md min-h-0 rounded-2xl border border-white/10 shadow-lg">
       <div className="relative flex-1 min-h-0">
         <button
-  onClick={handleCopyTranscript}
-  className={`absolute top-3 right-3 z-10 text-sm px-4 py-2 rounded-full font-semibold shadow-md bg-white text-black hover:bg-gray-100 transition`}
->
-  {justCopied ? "✅ Copied!" : "📋 Copy"}
-</button>
-ed ? "Copied!" : "Copy"}
+          onClick={handleCopyTranscript}
+          className="absolute top-3 right-3 z-10 text-sm px-4 py-2 rounded-full font-semibold shadow-md bg-white text-black hover:bg-gray-100 transition"
+        >
+          {justCopied ? "✅ Copied!" : "📋 Copy"}
         </button>
 
         <div
@@ -85,25 +82,46 @@ ed ? "Copied!" : "Copy"}
           className="overflow-auto p-4 flex flex-col gap-y-4 h-full"
         >
           {transcriptItems.map((item) => {
-            const { itemId, type, role, data, expanded, timestamp, title = "", isHidden } = item;
+            const {
+              itemId,
+              type,
+              role,
+              data,
+              expanded,
+              timestamp,
+              title = "",
+              isHidden,
+            } = item;
 
-            if (isHidden) {
-              return null;
-            }
+            if (isHidden) return null;
 
             if (type === "MESSAGE") {
               const isUser = role === "user";
-              const baseContainer = "flex justify-end flex-col";
-              const containerClasses = `${baseContainer} ${isUser ? "items-end" : "items-start"}`;
-              const bubbleBase = `max-w-lg p-3 rounded-xl ${isUser ? "bg-gray-900 text-gray-100" : "bg-gray-800 text-gray-100"}`;
-              const isBracketedMessage = title.startsWith("[") && title.endsWith("]");
-              const messageStyle = isBracketedMessage ? "italic text-gray-400" : "";
-              const displayTitle = isBracketedMessage ? title.slice(1, -1) : title;
+              const containerClasses = `flex justify-end flex-col ${
+                isUser ? "items-end" : "items-start"
+              }`;
+              const bubbleBase = `max-w-lg p-3 rounded-xl ${
+                isUser
+                  ? "bg-gray-900 text-gray-100"
+                  : "bg-gray-800 text-gray-100"
+              }`;
+              const isBracketedMessage =
+                title.startsWith("[") && title.endsWith("]");
+              const messageStyle = isBracketedMessage
+                ? "italic text-gray-400"
+                : "";
+              const displayTitle = isBracketedMessage
+                ? title.slice(1, -1)
+                : title;
 
               return (
                 <div key={itemId} className={containerClasses}>
                   <div className={bubbleBase}>
-                    <div className={`text-xs ${isUser ? "text-gray-400" : "text-gray-500"} font-mono`}>
+                    <div
+                      className={`text-xs ${
+                        isUser ? "text-gray-400" : "text-gray-500"
+                      } font-mono`}
+                    >
                       {timestamp}
                     </div>
                     <div className={`whitespace-pre-wrap ${messageStyle}`}>
@@ -146,7 +164,6 @@ ed ? "Copied!" : "Copy"}
                 </div>
               );
             } else {
-              // Fallback if type is neither MESSAGE nor BREADCRUMB
               return (
                 <div
                   key={itemId}
