@@ -106,15 +106,14 @@ function App() {
 
   const updateSession = (shouldTrigger = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
-    const agent = selectedAgentConfigSet?.find((a: any) => a.name === selectedAgentName);
 
     sendClientEvent({
       type: "session.update",
       session: {
         modalities: ["text", "audio"],
         instructions:
-          "You're Sage — friendly, expressive, sister-like AI. Speak warmly, emotionally, and supportively.",
-        voice: "sage",
+          "You are Sage — a warm, expressive assistant who speaks clearly, confidently, and emotionally like a wise older sister.",
+        voice: "sage", // ✅ This is the only voice that will be used
         input_audio_format: "pcm16",
         output_audio_format: "pcm16",
         input_audio_transcription: { model: "whisper-1" },
@@ -125,7 +124,7 @@ function App() {
           silence_duration_ms: 200,
           create_response: true,
         },
-        tools: agent?.tools || [],
+        tools: [],
       },
     });
 
