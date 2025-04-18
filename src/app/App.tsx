@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
 import { motion } from "framer-motion";
