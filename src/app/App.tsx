@@ -8,11 +8,14 @@ import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 import { createRealtimeConnection } from "./lib/realtimeConnection";
+import { allAgentSets } from "@/app/agentConfigs";
 import Transcript from "./components/Transcript";
 import SharePulse from "./components/SharePulse";
 
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
+  const [selectedAgentName, setSelectedAgentName] = useState("");
+  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState(null);
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -23,6 +26,7 @@ function App() {
 
   const [userText, setUserText] = useState("");
   const [transcriptWidth, setTranscriptWidth] = useState(400);
+  const [isConnected, setIsConnected] = useState(false);
 
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
@@ -36,10 +40,10 @@ function App() {
 
   const handleServerEventRef = useHandleServerEvent({
     setSessionStatus,
-    selectedAgentName: "sage",
-    selectedAgentConfigSet: [],
+    selectedAgentName,
+    selectedAgentConfigSet,
     sendClientEvent,
-    setSelectedAgentName: () => {},
+    setSelectedAgentName,
   });
 
   const connectToRealtime = async () => {
@@ -62,6 +66,7 @@ function App() {
       dc.addEventListener("message", (e) => handleServerEventRef.current(JSON.parse(e.data)));
 
       setSessionStatus("CONNECTED");
+      setIsConnected(true);
       updateSession(true);
 
       timerRef.current = setInterval(() => {
@@ -88,6 +93,7 @@ function App() {
     pcRef.current = null;
     dcRef.current = null;
     setSessionStatus("DISCONNECTED");
+    setIsConnected(false);
   };
 
   const sendSimulatedUserMessage = (text: string) => {
@@ -102,12 +108,14 @@ function App() {
 
   const updateSession = (shouldTrigger = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
+    const agent = selectedAgentConfigSet?.find((a: any) => a.name === selectedAgentName);
 
     sendClientEvent({
       type: "session.update",
       session: {
         modalities: ["text", "audio"],
         instructions:
+          agent?.instructions ||
           "You're Sage — friendly, expressive, sister-like AI. Speak warmly, emotionally, and supportively.",
         voice: "sage",
         input_audio_format: "pcm16",
@@ -120,7 +128,7 @@ function App() {
           silence_duration_ms: 200,
           create_response: true,
         },
-        tools: [],
+        tools: agent?.tools || [],
       },
     });
 
@@ -130,8 +138,16 @@ function App() {
   };
 
   useEffect(() => {
-    connectToRealtime();
+    const agents = allAgentSets["simpleExample"];
+    setSelectedAgentName(agents[0]?.name || "");
+    setSelectedAgentConfigSet(agents);
   }, []);
+
+  useEffect(() => {
+    if (selectedAgentName && sessionStatus === "DISCONNECTED") {
+      connectToRealtime();
+    }
+  }, [selectedAgentName]);
 
   const onOrbClick = () => {
     if (sessionStatus === "DISCONNECTED") connectToRealtime();
@@ -159,7 +175,7 @@ function App() {
         <motion.div
           className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
           animate={
-            sessionStatus === "CONNECTED"
+            isConnected
               ? { scale: [1, 1.05, 1], opacity: 1 }
               : { scale: 1, opacity: 0.4 }
           }
