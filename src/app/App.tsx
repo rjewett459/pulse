@@ -221,15 +221,35 @@ function App() {
         </p>
       </div>
 
-      <div className="flex flex-1 overflow-hidden flex-col-reverse">
-        <Transcript
-          userText={userText}
-          setUserText={setUserText}
-          onSendMessage={() => {}}
-          canSend={false}
-          transcriptWidth={transcriptWidth}
-          setTranscriptWidth={setTranscriptWidth}
-        />
+      <div className="flex flex-1 overflow-hidden flex-col">
+        <div className="flex-1 overflow-y-auto flex flex-col-reverse">
+          <Transcript
+            userText={userText}
+            setUserText={setUserText}
+            onSendMessage={() => {}}
+            canSend={false}
+            transcriptWidth={transcriptWidth}
+            setTranscriptWidth={setTranscriptWidth}
+          />
+        </div>
+
+        {!showShareModal && (
+          <div className="px-4 py-3 border-t border-gray-700 bg-black">
+            <input
+              type="text"
+              value={userText}
+              onChange={(e) => setUserText(e.target.value)}
+              placeholder="Type a message..."
+              className="w-full p-3 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-600"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && userText.trim()) {
+                  sendSimulatedUserMessage(userText.trim());
+                  setUserText("");
+                }
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {showShareModal && (
