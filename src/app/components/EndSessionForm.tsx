@@ -45,7 +45,7 @@ const EndSessionForm: React.FC<EndSessionFormProps> = ({ onSubmitSuccess }) => {
   if (submitted) {
     return (
       <div className="text-center text-white">
-        <h2 className="text-xl font-bold">✅ You're good to go!</h2>
+        <h2 className="text-xl font-bold">✅ You&apos;re good to go!</h2>
         <p className="text-sm text-gray-300 mt-2">Thanks for your info.</p>
       </div>
     );
