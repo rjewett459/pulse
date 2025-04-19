@@ -27,8 +27,8 @@ function App() {
 
   const timerRef = useRef(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
-  const pcRef = useRef(null);
-  const audioElemRef = useRef(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const audioElemRef = useRef<HTMLAudioElement | null>(null);
 
   const sendClientEvent = (obj: any) => {
     if (dcRef.current?.readyState === "open") {
