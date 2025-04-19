@@ -15,90 +15,70 @@ import EndSessionForm from "./components/EndSessionForm";
 import { AgentConfig } from "@/app/types";
 
 function App() {
+  // -- State --
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
-  const [selectedAgentName, setSelectedAgentName] = useState("");
-  const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
   const [sessionCount, setSessionCount] = useState<number>(() => {
     if (typeof window !== "undefined") {
-      const count = localStorage.getItem("voicemate_sessions") || "0";
-      return parseInt(count, 10);
+      return parseInt(localStorage.getItem("voicemate_sessions") || "0", 10);
     }
     return 0;
   });
 
-  // Responsive transcript width
+  // Transcript width
   const [transcriptWidth, setTranscriptWidth] = useState(0);
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const padding = 16 * 2; // px-4 on both sides
+      const padding = 16 * 2;
       setTranscriptWidth(window.innerWidth - padding);
     }
   }, []);
-
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const dcRef = useRef<RTCDataChannel | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
   const [userText, setUserText] = useState("");
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
-  const sendClientEvent = (eventObj: any) => {
+  // Refs
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const dcRef = useRef<RTCDataChannel | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const audioElemRef = useRef<HTMLAudioElement | null>(null);
+
+  const sendClientEvent = (obj: any) => {
     if (dcRef.current?.readyState === "open") {
-      logClientEvent(eventObj);
-      dcRef.current.send(JSON.stringify(eventObj));
+      logClientEvent(obj);
+      dcRef.current.send(JSON.stringify(obj));
     }
   };
 
-  const handleServerEventRef = useHandleServerEvent({
-    setSessionStatus,
-    selectedAgentName,
-    selectedAgentConfigSet,
-    sendClientEvent,
-    setSelectedAgentName,
-  });
+  const handleServerEventRef = useHandleServerEvent({ sendClientEvent, setSessionStatus });
 
+  // Connect / Disconnect
   const connectToRealtime = async () => {
     if (sessionStatus !== "DISCONNECTED") return;
-    if (sessionCount >= 2) {
-      setShowShareModal(true);
-      return;
-    }
+    if (sessionCount >= 2) return setShowShareModal(true);
     setSessionStatus("CONNECTING");
-
     try {
-      const res = await fetch("/api/session");
-      const { client_secret } = await res.json();
-      if (!client_secret?.value) {
-        setSessionStatus("DISCONNECTED");
-        return;
-      }
-
-      if (!audioElementRef.current) {
-        audioElementRef.current = document.createElement("audio");
-      }
-      audioElementRef.current.autoplay = true;
-
-      const { pc, dc } = await createRealtimeConnection(client_secret.value, audioElementRef);
+      const { client_secret } = await (await fetch("/api/session")).json();
+      if (!client_secret?.value) throw new Error();
+      if (!audioElemRef.current) audioElemRef.current = document.createElement("audio");
+      audioElemRef.current.autoplay = true;
+      const { pc, dc } = await createRealtimeConnection(client_secret.value, audioElemRef);
       pcRef.current = pc;
       dcRef.current = dc;
       dc.addEventListener("message", (e) => handleServerEventRef.current(JSON.parse(e.data)));
-
       setSessionStatus("CONNECTED");
-      updateSession(true);
-
+      // Start timer
       timerRef.current = setInterval(() => {
-        setTimer((prev) => {
-          if (prev <= 1) {
+        setTimer((t) => {
+          if (t <= 1) {
             clearInterval(timerRef.current!);
             disconnectFromRealtime();
             setShowShareModal(true);
             return 0;
           }
-          return prev - 1;
+          return t - 1;
         });
       }, 1000);
     } catch {
@@ -114,134 +94,111 @@ function App() {
     setSessionStatus("DISCONNECTED");
   };
 
-  const sendSimulatedUserMessage = (text: string) => {
-    const id = uuidv4().slice(0, 32);
-    addTranscriptMessage(id, "user", text, true);
-    sendClientEvent({
-      type: "conversation.item.create",
-      item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] },
-    });
-    sendClientEvent({ type: "response.create" });
-  };
-
-  const updateSession = (shouldTrigger = false) => {
-    sendClientEvent({ type: "input_audio_buffer.clear" });
-    sendClientEvent({
-      type: "session.update",
-      session: {
-        modalities: ["text", "audio"],
-        instructions: `Affect/personality: A cheerful guide. Tone: Friendly, clear, and reassuring. Pronunciation: Clear and conversational.`,
-        voice: "sage",
-        input_audio_format: "pcm16",
-        output_audio_format: "pcm16",
-        input_audio_transcription: { model: "whisper-1" },
-        turn_detection: {
-          type: "server_vad",
-          threshold: 0.5,
-          prefix_padding_ms: 300,
-          silence_duration_ms: 200,
-          create_response: true,
-        },
-        tools: [],
-      },
-    });
-
-    if (shouldTrigger) {
-      sendSimulatedUserMessage("Welcome! You have three minutes of Sage AI.");
-      setTimeout(() => {
-        sendSimulatedUserMessage("Still there? Ask me anything or just say hi.");
-      }, 12000);
-    }
-  };
-
-  useEffect(() => {
-    const agents = allAgentSets.simpleExample;
-    setSelectedAgentName(agents[0]?.name || "");
-    setSelectedAgentConfigSet(agents);
-  }, []);
-
-  useEffect(() => {
-    if (selectedAgentName && sessionStatus === "DISCONNECTED") connectToRealtime();
-  }, [selectedAgentName]);
-
-  const onOrbClick = () => {
+  const onOrbClick = () =>
     sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
+
+  // Simulated user message
+  const sendSimulatedUserMessage = (text: string) => {
+    const id = uuidv4();
+    addTranscriptMessage(id, "user", text, true);
+    sendClientEvent({ type: "conversation.item.create", item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] } });
+    sendClientEvent({ type: "response.create" });
+    setUserText("");
   };
 
+  // Handle form success
   const handleFormSuccess = () => {
     setShowShareModal(false);
     setTimer(180);
-    const newCount = sessionCount + 1;
-    setSessionCount(newCount);
-    localStorage.setItem("voicemate_sessions", newCount.toString());
+    const next = sessionCount + 1;
+    setSessionCount(next);
+    localStorage.setItem("voicemate_sessions", next.toString());
     connectToRealtime();
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col relative">
+    <div className="min-h-screen bg-black text-white flex flex-col relative pb-24">
       {/* Header */}
-      <header className="flex flex-col items-center sm:flex-row sm:justify-between px-4 pt-4">
-        <div className="flex items-center gap-2 sm:gap-3">
+      <header className="flex flex-col sm:flex-row items-center justify-between px-4 pt-4">
+        <div className="flex items-center gap-3">
           <Image src="/voicemate.svg" alt="Logo" width={36} height={36} />
           <div>
-            <h1 className="text-lg sm:text-xl font-bold">VoiceMate Pulse</h1>
-            <p className="text-xs sm:text-sm text-gray-400">Tap the orb to experience Sage ✨</p>
+            <h1 className="text-xl font-bold">VoiceMate Pulse</h1>
+            <p className="text-sm text-gray-400">Tap the orb to experience Sage ✨</p>
           </div>
         </div>
         {sessionStatus === "CONNECTED" && (
-          <div className="mt-2 sm:mt-0 text-sm">
-            ⏳ {Math.floor(timer/60)}:{String(timer%60).padStart(2, "0")}
+          <div className="mt-2 sm:mt-0 font-medium text-sm">
+            ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
           </div>
         )}
       </header>
 
       {/* Orb */}
-      <div className="flex flex-col items-center py-6">
+      <div className="flex justify-center items-center py-6">
         <motion.div
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
-          animate={ sessionStatus==="CONNECTED" ? { scale:[1,1.05,1], opacity:1 } : { scale:1, opacity:0.4 } }
-          transition={ sessionStatus==="CONNECTED" ? { duration:1.2, repeat:Infinity } : { duration:0 } }
+          animate={sessionStatus === "CONNECTED" ? { scale: [1, 1.05, 1], opacity: 1 } : { scale: 1, opacity: 0.4 }}
+          transition={sessionStatus === "CONNECTED" ? { duration: 1.2, repeat: Infinity } : { duration: 0 }}
           onClick={onOrbClick}
         />
-        <p className="text-xs text-gray-400 mt-2">
-          {sessionStatus==="DISCONNECTED" && "🔌 Disconnected"}
-          {sessionStatus==="CONNECTING"   && "⏳ Connecting..."}
-          {sessionStatus==="CONNECTED"    && "🤔 Thinking..."}
+        <p className="text-gray-400 text-sm mt-2 text-center">
+          {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
+          {sessionStatus === "CONNECTING" && "⏳ Connecting..."}
+          {sessionStatus === "CONNECTED" && "🤔 Thinking..."}
         </p>
       </div>
 
-      {/* Transcript & Input */}
-      <div className="flex flex-1 flex-col overflow-hidden px-4">
-        <div className="flex-1 overflow-y-auto flex flex-col-reverse">
-          <Transcript
-            userText={userText}
-            setUserText={setUserText}
-            onSendMessage={()=>{}}
-            canSend={false}
-            transcriptWidth={transcriptWidth}
-            setTranscriptWidth={setTranscriptWidth}
+      {/* Transcript */}
+      <div className="flex-1 overflow-y-auto px-4">
+        <Transcript
+          userText={userText}
+          setUserText={setUserText}
+          onSendMessage={() => sendSimulatedUserMessage(userText)}
+          canSend
+          transcriptWidth={transcriptWidth}
+          setTranscriptWidth={setTranscriptWidth}
+        />
+      </div>
+
+      {/* Fixed Input */}
+      {!showShareModal && (
+        <div className="fixed bottom-0 left-0 w-full bg-black border-t border-gray-700 px-4 py-3">
+          <input
+            type="text"
+            value={userText}
+            onChange={(e) => setUserText(e.target.value)}
+            placeholder="Type a message..."
+            className="w-full rounded-full p-3 bg-gray-800 text-white placeholder-gray-400 border border-gray-600"
+            onKeyDown={(e) => e.key === "Enter" && userText.trim() && sendSimulatedUserMessage(userText)}
           />
         </div>
-        {!showShareModal && (
-          <div className="mt-2">
-            <input
-              type="text"
-              value={userText}
-              onChange={e=>setUserText(e.target.value)}
-              placeholder="Type a message..."
-              className="w-full p-3 bg-gray-800 text-white placeholder-gray-400 rounded-lg border border-gray-600"
-              onKeyDown={e=>{if(e.key==="Enter"&&userText.trim()){sendSimulatedUserMessage(userText.trim());setUserText("")}}}
-            />
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/80 z-50">
           <EndSessionForm onSubmitSuccess={handleFormSuccess} />
         </div>
       )}
+
+      {/* Global Styles for Copy Button */}
+      <style jsx global>{`
+        .copy-button {
+          background: linear-gradient(90deg, #7F00FF, #E100FF);
+          color: #fff;
+          border-radius: 9999px;
+          padding: 0.5rem 1rem;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          border: none;
+          cursor: pointer;
+          transition: transform 0.1s ease-in-out;
+        }
+        .copy-button:hover {
+          transform: scale(1.05);
+        }
+      `}</style>
     </div>
   );
 }
