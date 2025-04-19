@@ -37,7 +37,13 @@ function App() {
     }
   };
 
-  const handleServerEventRef = useHandleServerEvent({ sendClientEvent, setSessionStatus });
+  const handleServerEventRef = useHandleServerEvent({
+  sendClientEvent,
+  setSessionStatus,
+  selectedAgentName: "",
+  selectedAgentConfigSet: null,
+  setSelectedAgentName: () => {},
+});
 
   const connectToRealtime = async () => {
     if (sessionStatus !== "DISCONNECTED") return;
