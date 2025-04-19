@@ -12,6 +12,8 @@ import allAgentSets from "@/app/agentConfigs";
 import Transcript from "./components/Transcript";
 import SharePulse from "./components/SharePulse";
 import { AgentConfig } from "@/app/types";
+import EndSessionForm from "./components/EndSessionForm";
+
 
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
@@ -138,9 +140,15 @@ const updateSession = (shouldTrigger = false) => {
   });
 
   if (shouldTrigger) {
-    sendSimulatedUserMessage("Hey there, show me the magic.");
+    sendSimulatedUserMessage("Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI. You can ask me about almost anything.");
+
+    // ⏱️ Follow up after 12 seconds if user is silent
+    setTimeout(() => {
+      sendSimulatedUserMessage("Still there? You can ask me anything — like help with something, or just say hi.");
+    }, 12000);
   }
 };
+
 
 
   useEffect(() => {
