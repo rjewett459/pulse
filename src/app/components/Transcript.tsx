@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 
-function Transcript({ onSendMessage }: { onSendMessage: () => void }) {
+function Transcript({}) {
   const { transcriptItems, toggleTranscriptItemExpand } = useTranscript();
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const [justCopied, setJustCopied] = useState(false);
@@ -76,4 +76,3 @@ function Transcript({ onSendMessage }: { onSendMessage: () => void }) {
 }
 
 export default Transcript;
-
