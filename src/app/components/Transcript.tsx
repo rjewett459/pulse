@@ -11,7 +11,7 @@ function Transcript() {
 
   useEffect(() => {
     if (transcriptRef.current) {
-      transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
+      transcriptRef.current.scrollTop = 0;
     }
   }, [transcriptItems]);
 
@@ -38,9 +38,9 @@ function Transcript() {
       </div>
       <div
         ref={transcriptRef}
-        className="flex-1 overflow-y-auto p-4 flex flex-col gap-y-4"
+        className="flex-1 overflow-y-auto p-4 flex flex-col-reverse gap-y-4"
       >
-        {transcriptItems.map((item) => {
+        {[...transcriptItems].reverse().map((item) => {
           if (item.isHidden) return null;
           const { itemId, type, role, timestamp, title = "", data, expanded } = item;
 
