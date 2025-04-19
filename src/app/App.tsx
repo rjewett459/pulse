@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
@@ -28,13 +26,11 @@ function App() {
   });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
   const dcRef = useRef<RTCDataChannel | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
   const [userText, setUserText] = useState("");
-  const [transcriptWidth, setTranscriptWidth] = useState(400);
 
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
@@ -65,8 +61,10 @@ function App() {
     try {
       const tokenRes = await fetch("/api/session");
       const { client_secret } = await tokenRes.json();
-      if (!client_secret?.value) return setSessionStatus("DISCONNECTED");
 
+      if (!client_secret?.value) {
+        return setSessionStatus("DISCONNECTED");
+      }
       if (!audioElementRef.current) {
         audioElementRef.current = document.createElement("audio");
       }
@@ -149,9 +147,13 @@ function App() {
     });
 
     if (shouldTrigger) {
-      sendSimulatedUserMessage("Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI. You can ask me about almost anything.");
+      sendSimulatedUserMessage(
+        "Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI. You can ask me about almost anything."
+      );
       setTimeout(() => {
-        sendSimulatedUserMessage("Still there? You can ask me anything — like help with something, or just say hi.");
+        sendSimulatedUserMessage(
+          "Still there? You can ask me anything — like help with something, or just say hi."
+        );
       }, 12000);
     }
   };
@@ -184,24 +186,26 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col relative">
-      <header className="flex justify-between items-center px-4 pt-4">
-        <div className="flex items-center gap-3">
-          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
+      {/* Mobile-first header */}
+      <header className="flex flex-col items-center sm:flex-row sm:justify-between px-4 pt-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={36} height={36} />
           <div>
-            <h1 className="text-xl font-bold">VoiceMate Pulse</h1>
-            <p className="text-sm text-gray-400">Tap the orb to experience Sage ✨</p>
+            <h1 className="text-lg sm:text-xl font-bold">VoiceMate Pulse</h1>
+            <p className="text-xs sm:text-sm text-gray-400">Tap the orb to experience Sage ✨</p>
           </div>
         </div>
         {sessionStatus === "CONNECTED" && (
-          <div className="text-sm font-medium">
+          <div className="mt-2 sm:mt-0 text-sm font-medium">
             ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
           </div>
         )}
       </header>
 
-      <div className="flex justify-center items-center flex-col py-6">
+      {/* Orb and status */}
+      <div className="flex flex-col items-center py-6">
         <motion.div
-          className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
+          className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
           animate={
             sessionStatus === "CONNECTED"
               ? { scale: [1, 1.05, 1], opacity: 1 }
@@ -214,27 +218,26 @@ function App() {
           }
           onClick={onOrbClick}
         />
-        <p className="text-sm text-gray-400 mt-2">
+        <p className="text-xs text-gray-400 mt-2">
           {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
           {sessionStatus === "CONNECTING" && "⏳ Connecting..."}
           {sessionStatus === "CONNECTED" && "🤔 Thinking..."}
         </p>
       </div>
 
-      <div className="flex flex-1 overflow-hidden flex-col">
+      {/* Transcript & Input */}
+      <div className="flex flex-1 flex-col overflow-hidden px-4">
         <div className="flex-1 overflow-y-auto flex flex-col-reverse">
           <Transcript
             userText={userText}
             setUserText={setUserText}
             onSendMessage={() => {}}
             canSend={false}
-            transcriptWidth={transcriptWidth}
-            setTranscriptWidth={setTranscriptWidth}
           />
         </div>
 
         {!showShareModal && (
-          <div className="px-4 py-3 border-t border-gray-700 bg-black">
+          <div className="mt-2 bg-transparent">
             <input
               type="text"
               value={userText}
@@ -252,6 +255,7 @@ function App() {
         )}
       </div>
 
+      {/* Share Modal */}
       {showShareModal && (
         <div className="absolute inset-0 flex justify-center items-center bg-black/80 z-50">
           <EndSessionForm onSubmitSuccess={handleFormSuccess} />
