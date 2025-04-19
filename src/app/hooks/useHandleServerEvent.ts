@@ -104,7 +104,7 @@ export function useHandleServerEvent({
     }
   };
 
-  const handleServerEvent = (serverEvent: ServerEvent) => {
+  const handleServerEvent = (serverEvent: ServerEvent & { audio_url?: string }) => {
     logServerEvent(serverEvent);
 
     switch (serverEvent.type) {
