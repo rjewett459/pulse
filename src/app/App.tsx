@@ -11,7 +11,7 @@ import Transcript from "./components/Transcript";
 import EndSessionForm from "./components/EndSessionForm";
 
 function App() {
-  const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
+  const [sessionStatus, setSessionStatus] = useState<"DISCONNECTED" | "CONNECTING" | "CONNECTED">("DISCONNECTED");
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
   const [sessionCount, setSessionCount] = useState(() => {
@@ -105,6 +105,9 @@ function App() {
     setSessionStatus("DISCONNECTED");
   };
 
+  const onOrbClick = () =>
+    sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
+
   const sendSimulatedUserMessage = (text: string) => {
     const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
     addTranscriptMessage(id, "user", text, true);
@@ -125,10 +128,9 @@ function App() {
     connectToRealtime();
   };
 
-  useEffect(() => {
-    const start = async () => {
-      await connectToRealtime();
-
+   useEffect(() => {
+  const start = async () => {
+    await connectToRealtime();
       const waitForConnection = () =>
         new Promise<void>((resolve) => {
           const interval = setInterval(() => {
@@ -143,27 +145,23 @@ function App() {
 
       const intro = "Hey there, it’s great to have you here. I’m ready to help. What would you like to talk about?";
       const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
-
       addTranscriptMessage(id, "user", intro, true);
       sendClientEvent({
         type: "conversation.item.create",
-        item: {
-          id,
-          type: "message",
-          role: "user",
-          content: [{ type: "input_text", text: intro }],
-        },
+        item: { id, type: "message", role: "user", content: [{ type: "input_text", text: intro }] },
       });
 
       setTimeout(() => {
         sendClientEvent({ type: "response.create" });
-      }, 500);
+      }, 1000);
     };
 
-    start();
-  }, []);
+    start(); // <-- ✅ This should be a function call, not a reference
+   }, []);
+
 
   return (
+  
     <div className="min-h-screen bg-black text-white flex flex-col relative pb-24">
       <header className="flex flex-col sm:flex-row items-center justify-between px-4 pt-4">
         <div className="flex items-center gap-3">
@@ -185,9 +183,7 @@ function App() {
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
           animate={sessionStatus === "CONNECTED" ? { scale: [1, 1.05, 1], opacity: 1 } : { scale: 1, opacity: 0.4 }}
           transition={sessionStatus === "CONNECTED" ? { duration: 1.2, repeat: Infinity } : { duration: 0 }}
-          onClick={() => {
-            sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
-          }}
+          onClick={onOrbClick}
         />
         <p className="text-gray-400 text-sm mt-4 text-center w-full">
           {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
