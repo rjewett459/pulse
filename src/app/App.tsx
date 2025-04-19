@@ -25,12 +25,12 @@ function App() {
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
-  const timerRef = useRef(null);
-  const dcRef = useRef(null);
-  const pcRef = useRef(null);
-  const audioElemRef = useRef(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const dcRef = useRef<RTCDataChannel | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const audioElemRef = useRef<HTMLAudioElement | null>(null);
 
-  const sendClientEvent = (obj) => {
+  const sendClientEvent = (obj: any) => {
     if (dcRef.current?.readyState === "open") {
       logClientEvent(obj);
       dcRef.current.send(JSON.stringify(obj));
@@ -56,7 +56,7 @@ function App() {
       timerRef.current = setInterval(() => {
         setTimer((t) => {
           if (t <= 1) {
-            clearInterval(timerRef.current);
+            if (timerRef.current) clearInterval(timerRef.current);
             disconnectFromRealtime();
             setShowShareModal(true);
             return 0;
@@ -80,8 +80,10 @@ function App() {
   const onOrbClick = () =>
     sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
 
-  const sendSimulatedUserMessage = (text) => {
-    const id = crypto.randomUUID();
+  const sendSimulatedUserMessage = (text: string) => {
+    const id = typeof crypto?.randomUUID === "function"
+      ? crypto.randomUUID()
+      : Math.random().toString(36).substring(2, 10);
     addTranscriptMessage(id, "user", text, true);
     sendClientEvent({ type: "conversation.item.create", item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] } });
     sendClientEvent({ type: "response.create" });
@@ -172,6 +174,3 @@ function App() {
 }
 
 export default App;
-
-
-
