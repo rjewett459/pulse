@@ -122,14 +122,14 @@ function App() {
         )}
       </header>
 
-      <div className="flex justify-center items-center py-6">
+      <div className="flex flex-col items-center py-6">
         <motion.div
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
           animate={sessionStatus === "CONNECTED" ? { scale: [1, 1.05, 1], opacity: 1 } : { scale: 1, opacity: 0.4 }}
           transition={sessionStatus === "CONNECTED" ? { duration: 1.2, repeat: Infinity } : { duration: 0 }}
           onClick={onOrbClick}
         />
-        <p className="text-gray-400 text-sm mt-2 text-center">
+        <p className="text-gray-400 text-sm mt-4 text-center w-full">
           {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
           {sessionStatus === "CONNECTING" && "⏳ Connecting..."}
           {sessionStatus === "CONNECTED" && "🤔 Thinking..."}

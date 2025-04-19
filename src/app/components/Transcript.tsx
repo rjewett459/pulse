@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 
@@ -8,6 +8,12 @@ function Transcript() {
   const { transcriptItems, toggleTranscriptItemExpand } = useTranscript();
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const [justCopied, setJustCopied] = useState(false);
+
+  useEffect(() => {
+    if (transcriptRef.current) {
+      transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
+    }
+  }, [transcriptItems]);
 
   const handleCopy = async () => {
     if (!transcriptRef.current) return;
