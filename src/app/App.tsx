@@ -218,14 +218,13 @@ const updateSession = (shouldTrigger = false) => {
         />
       </div>
 
-      {showShareModal ? (
-  <div className="flex justify-center items-center flex-1">
-    <EndSessionForm onSubmitSuccess={() => setShowShareModal(false)} />
-  </div>
-) : (
-  <SharePulse open={showShareModal} onClose={() => setShowShareModal(false)} />
-)}
-
+           {showShareModal ? (
+        <div className="flex justify-center items-center flex-1">
+          <EndSessionForm onSubmitSuccess={() => setShowShareModal(false)} />
+        </div>
+      ) : (
+        <SharePulse open={showShareModal} onClose={() => setShowShareModal(false)} />
+      )}
     </div>
   );
 }
