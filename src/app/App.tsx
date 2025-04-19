@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
@@ -20,7 +22,7 @@ function App() {
   const [sessionCount, setSessionCount] = useState<number>(() => {
     if (typeof window !== "undefined") {
       const count = localStorage.getItem("voicemate_sessions") || "0";
-      return parseInt(count);
+      return parseInt(count, 10);
     }
     return 0;
   });
@@ -31,13 +33,12 @@ function App() {
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
   const [userText, setUserText] = useState("");
-
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
-  const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
-    if (dcRef.current && dcRef.current.readyState === "open") {
-      logClientEvent(eventObj, eventNameSuffix);
+  const sendClientEvent = (eventObj: any) => {
+    if (dcRef.current?.readyState === "open") {
+      logClientEvent(eventObj);
       dcRef.current.send(JSON.stringify(eventObj));
     }
   };
@@ -59,12 +60,10 @@ function App() {
     setSessionStatus("CONNECTING");
 
     try {
-      const tokenRes = await fetch("/api/session");
-      const { client_secret } = await tokenRes.json();
+      const res = await fetch("/api/session");
+      const { client_secret } = await res.json();
+      if (!client_secret?.value) return setSessionStatus("DISCONNECTED");
 
-      if (!client_secret?.value) {
-        return setSessionStatus("DISCONNECTED");
-      }
       if (!audioElementRef.current) {
         audioElementRef.current = document.createElement("audio");
       }
@@ -73,13 +72,13 @@ function App() {
       const { pc, dc } = await createRealtimeConnection(client_secret.value, audioElementRef);
       pcRef.current = pc;
       dcRef.current = dc;
-      dc.addEventListener("message", (e) => handleServerEventRef.current(JSON.parse(e.data)));
+      dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
 
       setSessionStatus("CONNECTED");
       updateSession(true);
 
       timerRef.current = setInterval(() => {
-        setTimer((prev) => {
+        setTimer(prev => {
           if (prev <= 1) {
             clearInterval(timerRef.current!);
             disconnectFromRealtime();
@@ -95,10 +94,8 @@ function App() {
   };
 
   const disconnectFromRealtime = () => {
-    if (pcRef.current) {
-      pcRef.current.getSenders().forEach((s) => s.track?.stop());
-      pcRef.current.close();
-    }
+    pcRef.current?.getSenders().forEach(s => s.track?.stop());
+    pcRef.current?.close();
     pcRef.current = null;
     dcRef.current = null;
     setSessionStatus("DISCONNECTED");
@@ -120,17 +117,9 @@ function App() {
       type: "session.update",
       session: {
         modalities: ["text", "audio"],
-        instructions: `
-          Affect/personality: A cheerful guide.
-
-          Tone: Friendly, clear, and reassuring, creating a calm atmosphere and making the listener feel confident and comfortable.
-
-          Pronunciation: Clear, articulate, and steady, ensuring each instruction is easily understood while maintaining a natural, conversational flow.
-
-          Pause: Use brief, purposeful pauses after key instructions (e.g., "cross the street" and "turn right") to allow time for the listener to process and follow along.
-
-          Emotion: Warm and supportive, conveying empathy and care to ensure the listener feels guided and safe throughout the journey.
-        `,
+        instructions: `Affect/personality: A cheerful guide.
+Tone: Friendly, clear, and reassuring.
+Pronunciation: Clear and conversational.`,
         voice: "sage",
         input_audio_format: "pcm16",
         output_audio_format: "pcm16",
@@ -147,32 +136,25 @@ function App() {
     });
 
     if (shouldTrigger) {
-      sendSimulatedUserMessage(
-        "Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI. You can ask me about almost anything."
-      );
+      sendSimulatedUserMessage("Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI.");
       setTimeout(() => {
-        sendSimulatedUserMessage(
-          "Still there? You can ask me anything — like help with something, or just say hi."
-        );
+        sendSimulatedUserMessage("Still there? You can ask me anything — like help or just say hi.");
       }, 12000);
     }
   };
 
   useEffect(() => {
-    const agents = allAgentSets["simpleExample"];
+    const agents = allAgentSets.simpleExample;
     setSelectedAgentName(agents[0]?.name || "");
     setSelectedAgentConfigSet(agents);
   }, []);
 
   useEffect(() => {
-    if (selectedAgentName && sessionStatus === "DISCONNECTED") {
-      connectToRealtime();
-    }
+    if (selectedAgentName && sessionStatus === "DISCONNECTED") connectToRealtime();
   }, [selectedAgentName]);
 
   const onOrbClick = () => {
-    if (sessionStatus === "DISCONNECTED") connectToRealtime();
-    else disconnectFromRealtime();
+    sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
   };
 
   const handleFormSuccess = () => {
@@ -186,65 +168,51 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col relative">
-      {/* Mobile-first header */}
+      {/* Header */}
       <header className="flex flex-col items-center sm:flex-row sm:justify-between px-4 pt-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <Image src="/voicemate.svg" alt="VoiceMate Logo" width={36} height={36} />
+          <Image src="/voicemate.svg" alt="Logo" width={36} height={36} />
           <div>
             <h1 className="text-lg sm:text-xl font-bold">VoiceMate Pulse</h1>
             <p className="text-xs sm:text-sm text-gray-400">Tap the orb to experience Sage ✨</p>
           </div>
         </div>
         {sessionStatus === "CONNECTED" && (
-          <div className="mt-2 sm:mt-0 text-sm font-medium">
+          <div className="mt-2 sm:mt-0 text-sm">
             ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
           </div>
         )}
       </header>
 
-      {/* Orb and status */}
+      {/* Orb */}
       <div className="flex flex-col items-center py-6">
         <motion.div
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
-          animate={
-            sessionStatus === "CONNECTED"
-              ? { scale: [1, 1.05, 1], opacity: 1 }
-              : { scale: 1, opacity: 0.4 }
-          }
-          transition={
-            sessionStatus === "CONNECTED"
-              ? { duration: 1.2, repeat: Infinity }
-              : { duration: 0 }
-          }
+          animate={sessionStatus === "CONNECTED" ? { scale: [1,1.05,1], opacity: 1 } : { scale:1, opacity:0.4 }}
+          transition={sessionStatus === "CONNECTED" ? { duration:1.2, repeat:Infinity } : { duration:0 }}
           onClick={onOrbClick}
         />
         <p className="text-xs text-gray-400 mt-2">
           {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
-          {sessionStatus === "CONNECTING" && "⏳ Connecting..."}
-          {sessionStatus === "CONNECTED" && "🤔 Thinking..."}
+          {sessionStatus === "CONNECTING"    && "⏳ Connecting..."}
+          {sessionStatus === "CONNECTED"     && "🤔 Thinking..."}
         </p>
       </div>
 
       {/* Transcript & Input */}
       <div className="flex flex-1 flex-col overflow-hidden px-4">
         <div className="flex-1 overflow-y-auto flex flex-col-reverse">
-          <Transcript
-            userText={userText}
-            setUserText={setUserText}
-            onSendMessage={() => {}}
-            canSend={false}
-          />
+          <Transcript userText={userText} setUserText={setUserText} onSendMessage={() => {}} canSend={false} />
         </div>
-
         {!showShareModal && (
-          <div className="mt-2 bg-transparent">
+          <div className="mt-2">
             <input
               type="text"
               value={userText}
-              onChange={(e) => setUserText(e.target.value)}
+              onChange={e => setUserText(e.target.value)}
               placeholder="Type a message..."
-              className="w-full p-3 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-600"
-              onKeyDown={(e) => {
+              className="w-full p-3 bg-gray-800 text-white placeholder-gray-400 rounded-lg border border-gray-600"
+              onKeyDown={e => {
                 if (e.key === "Enter" && userText.trim()) {
                   sendSimulatedUserMessage(userText.trim());
                   setUserText("");
@@ -255,14 +223,13 @@ function App() {
         )}
       </div>
 
-      {/* Share Modal */}
+      {/* Modal */}
       {showShareModal && (
-        <div className="absolute inset-0 flex justify-center items-center bg-black/80 z-50">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
           <EndSessionForm onSubmitSuccess={handleFormSuccess} />
         </div>
       )}
     </div>
-  );
-}
+);
 
 export default App;
