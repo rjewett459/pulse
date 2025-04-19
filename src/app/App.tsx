@@ -11,9 +11,8 @@ import { createRealtimeConnection } from "./lib/realtimeConnection";
 import allAgentSets from "@/app/agentConfigs";
 import Transcript from "./components/Transcript";
 import SharePulse from "./components/SharePulse";
-import { AgentConfig } from "@/app/types";
 import EndSessionForm from "./components/EndSessionForm";
-
+import { AgentConfig } from "@/app/types";
 
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
@@ -106,50 +105,47 @@ function App() {
     sendClientEvent({ type: "response.create" });
   };
 
-const updateSession = (shouldTrigger = false) => {
-  sendClientEvent({ type: "input_audio_buffer.clear" });
+  const updateSession = (shouldTrigger = false) => {
+    sendClientEvent({ type: "input_audio_buffer.clear" });
 
-  sendClientEvent({
-    type: "session.update",
-    session: {
-      modalities: ["text", "audio"],
-      instructions: `
-        Affect/personality: A cheerful guide.
+    sendClientEvent({
+      type: "session.update",
+      session: {
+        modalities: ["text", "audio"],
+        instructions: `
+          Affect/personality: A cheerful guide.
 
-        Tone: Friendly, clear, and reassuring, creating a calm atmosphere and making the listener feel confident and comfortable.
+          Tone: Friendly, clear, and reassuring, creating a calm atmosphere and making the listener feel confident and comfortable.
 
-        Pronunciation: Clear, articulate, and steady, ensuring each instruction is easily understood while maintaining a natural, conversational flow.
+          Pronunciation: Clear, articulate, and steady, ensuring each instruction is easily understood while maintaining a natural, conversational flow.
 
-        Pause: Use brief, purposeful pauses after key instructions (e.g., "cross the street" and "turn right") to allow time for the listener to process and follow along.
+          Pause: Use brief, purposeful pauses after key instructions (e.g., "cross the street" and "turn right") to allow time for the listener to process and follow along.
 
-        Emotion: Warm and supportive, conveying empathy and care to ensure the listener feels guided and safe throughout the journey.
-      `,
-      voice: "sage",
-      input_audio_format: "pcm16",
-      output_audio_format: "pcm16",
-      input_audio_transcription: { model: "whisper-1" },
-      turn_detection: {
-        type: "server_vad",
-        threshold: 0.5,
-        prefix_padding_ms: 300,
-        silence_duration_ms: 200,
-        create_response: true,
+          Emotion: Warm and supportive, conveying empathy and care to ensure the listener feels guided and safe throughout the journey.
+        `,
+        voice: "sage",
+        input_audio_format: "pcm16",
+        output_audio_format: "pcm16",
+        input_audio_transcription: { model: "whisper-1" },
+        turn_detection: {
+          type: "server_vad",
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 200,
+          create_response: true,
+        },
+        tools: [],
       },
-      tools: [],
-    },
-  });
+    });
 
-  if (shouldTrigger) {
-    sendSimulatedUserMessage("Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI. You can ask me about almost anything.");
+    if (shouldTrigger) {
+      sendSimulatedUserMessage("Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI. You can ask me about almost anything.");
 
-    // ⏱️ Follow up after 12 seconds if user is silent
-    setTimeout(() => {
-      sendSimulatedUserMessage("Still there? You can ask me anything — like help with something, or just say hi.");
-    }, 12000);
-  }
-};
-
-
+      setTimeout(() => {
+        sendSimulatedUserMessage("Still there? You can ask me anything — like help with something, or just say hi.");
+      }, 12000);
+    }
+  };
 
   useEffect(() => {
     const agents = allAgentSets["simpleExample"];
@@ -169,7 +165,7 @@ const updateSession = (shouldTrigger = false) => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col relative">
       <header className="flex justify-between items-center px-4 pt-4">
         <div className="flex items-center gap-3">
           <Image src="/voicemate.svg" alt="VoiceMate Logo" width={40} height={40} />
@@ -207,7 +203,7 @@ const updateSession = (shouldTrigger = false) => {
         </p>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden">
         <Transcript
           userText={userText}
           setUserText={setUserText}
@@ -218,12 +214,10 @@ const updateSession = (shouldTrigger = false) => {
         />
       </div>
 
-           {showShareModal ? (
-        <div className="flex justify-center items-center flex-1">
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
           <EndSessionForm onSubmitSuccess={() => setShowShareModal(false)} />
         </div>
-      ) : (
-        <SharePulse open={showShareModal} onClose={() => setShowShareModal(false)} />
       )}
     </div>
   );
