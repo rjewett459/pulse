@@ -137,7 +137,7 @@ function App() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4">
-        <Transcript onSendMessage={() => sendSimulatedUserMessage(userText)} />
+        <Transcript />
       </div>
 
       {!showShareModal && (
