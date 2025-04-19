@@ -97,6 +97,11 @@ function App() {
     }
   };
 
+  const onOrbClick = () =>
+  sessionStatus === "DISCONNECTED"
+    ? connectToRealtime()
+    : disconnectFromRealtime();
+
   const disconnectFromRealtime = () => {
     pcRef.current?.getSenders().forEach((s) => s.track?.stop());
     pcRef.current?.close();
