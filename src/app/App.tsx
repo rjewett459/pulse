@@ -25,12 +25,12 @@ function App() {
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const dcRef = useRef<RTCDataChannel | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const audioElemRef = useRef<HTMLAudioElement | null>(null);
+  const timerRef = useRef(null);
+  const dcRef = useRef(null);
+  const pcRef = useRef(null);
+  const audioElemRef = useRef(null);
 
-  const sendClientEvent = (obj: any) => {
+  const sendClientEvent = (obj) => {
     if (dcRef.current?.readyState === "open") {
       logClientEvent(obj);
       dcRef.current.send(JSON.stringify(obj));
@@ -105,16 +105,14 @@ function App() {
     setSessionStatus("DISCONNECTED");
   };
 
-  const onOrbClick = () =>
-    sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
-
-  const sendSimulatedUserMessage = (text: string) => {
-    const id = typeof crypto?.randomUUID === "function"
-      ? crypto.randomUUID()
-      : Math.random().toString(36).substring(2, 10);
+  const sendSimulatedUserMessage = (text) => {
+    const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
     addTranscriptMessage(id, "user", text, true);
-    sendClientEvent({ type: "conversation.item.create", item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] } });
-    sendClientEvent({ type: "response.create" });
+    sendClientEvent({
+      type: "conversation.item.create",
+      item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] },
+    });
+    setTimeout(() => sendClientEvent({ type: "response.create" }), 250);
     setUserText("");
   };
 
@@ -130,9 +128,8 @@ function App() {
   useEffect(() => {
     const start = async () => {
       await connectToRealtime();
-
       const waitForConnection = () =>
-        new Promise<void>((resolve) => {
+        new Promise((resolve) => {
           const interval = setInterval(() => {
             if (dcRef.current?.readyState === "open") {
               clearInterval(interval);
@@ -140,31 +137,11 @@ function App() {
             }
           }, 100);
         });
-
       await waitForConnection();
 
       const intro = "Hey there, it’s great to have you here. I’m ready to help. What would you like to talk about?";
-      const id = typeof crypto?.randomUUID === "function"
-        ? crypto.randomUUID()
-        : Math.random().toString(36).substring(2, 10);
-
-      addTranscriptMessage(id, "user", intro, true);
-
-      sendClientEvent({
-        type: "conversation.item.create",
-        item: {
-          id,
-          type: "message",
-          role: "user",
-          content: [{ type: "input_text", text: intro }],
-        },
-      });
-
-      setTimeout(() => {
-        sendClientEvent({ type: "response.create" });
-      }, 1000);
+      sendSimulatedUserMessage(intro);
     };
-
     start();
   }, []);
 
