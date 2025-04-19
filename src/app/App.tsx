@@ -38,12 +38,12 @@ function App() {
   };
 
   const handleServerEventRef = useHandleServerEvent({
-  sendClientEvent,
-  setSessionStatus,
-  selectedAgentName: "",
-  selectedAgentConfigSet: null,
-  setSelectedAgentName: () => {},
-});
+    sendClientEvent,
+    setSessionStatus,
+    selectedAgentName: "",
+    selectedAgentConfigSet: null,
+    setSelectedAgentName: () => {},
+  });
 
   const connectToRealtime = async () => {
     if (sessionStatus !== "DISCONNECTED") return;
@@ -141,7 +141,7 @@ function App() {
       </div>
 
       {!showShareModal && (
-        <div className="fixed bottom-0 left-0 w-full bg-black border-t border-gray-700 px-4 py-3">
+        <div className="fixed bottom-0 left-0 w-full bg-black border-t border-gray-700 px-4 py-3 z-40">
           <input
             type="text"
             value={userText}
@@ -161,15 +161,15 @@ function App() {
 
       <style jsx global>{`
         .copy-button {
-          background: linear-gradient(90deg, #7F00FF, #E100FF);
-          color: #fff;
+          background: linear-gradient(90deg, #6EE7B7, #3B82F6);
+          color: white;
           border-radius: 9999px;
           padding: 0.5rem 1rem;
           font-weight: 600;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
           border: none;
           cursor: pointer;
-          transition: transform 0.1s ease-in-out;
+          transition: transform 0.15s ease-in-out;
         }
         .copy-button:hover {
           transform: scale(1.05);

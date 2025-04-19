@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 
-function Transcript({}) {
+function Transcript() {
   const { transcriptItems, toggleTranscriptItemExpand } = useTranscript();
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const [justCopied, setJustCopied] = useState(false);
@@ -21,11 +21,19 @@ function Transcript({}) {
   };
 
   return (
-    <div className="flex flex-col flex-1 bg-white/5 backdrop-blur-md min-h-0 rounded-2xl border border-white/10 shadow-lg p-4">
-      <button onClick={handleCopy} className="copy-button self-end mb-2">
-        {justCopied ? "✅ Copied!" : "📋 Copy"}
-      </button>
-      <div ref={transcriptRef} className="overflow-auto flex flex-col gap-y-4 flex-1">
+    <div className="flex flex-col flex-1 bg-white/5 backdrop-blur-md min-h-0 rounded-2xl border border-white/10 shadow-lg overflow-hidden">
+      <div className="flex items-center justify-end p-2 border-b border-white/10">
+        <button
+          onClick={handleCopy}
+          className="copy-button text-sm px-4 py-2 transition-all duration-200"
+        >
+          {justCopied ? "✅ Copied!" : "📋 Copy Transcript"}
+        </button>
+      </div>
+      <div
+        ref={transcriptRef}
+        className="flex-1 overflow-y-auto p-4 flex flex-col gap-y-4"
+      >
         {transcriptItems.map((item) => {
           if (item.isHidden) return null;
           const { itemId, type, role, timestamp, title = "", data, expanded } = item;
