@@ -26,7 +26,7 @@ function App() {
   const { logClientEvent } = useEvent();
 
   const timerRef = useRef(null);
-  const dcRef = useRef(null);
+  const dcRef = useRef<RTCDataChannel | null>(null);
   const pcRef = useRef(null);
   const audioElemRef = useRef(null);
 
