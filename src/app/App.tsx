@@ -62,7 +62,10 @@ function App() {
     try {
       const res = await fetch("/api/session");
       const { client_secret } = await res.json();
-      if (!client_secret?.value) return setSessionStatus("DISCONNECTED");
+      if (!client_secret?.value) {
+        setSessionStatus("DISCONNECTED");
+        return;
+      }
 
       if (!audioElementRef.current) {
         audioElementRef.current = document.createElement("audio");
@@ -72,13 +75,13 @@ function App() {
       const { pc, dc } = await createRealtimeConnection(client_secret.value, audioElementRef);
       pcRef.current = pc;
       dcRef.current = dc;
-      dc.addEventListener("message", e => handleServerEventRef.current(JSON.parse(e.data)));
+      dc.addEventListener("message", (e) => handleServerEventRef.current(JSON.parse(e.data)));
 
       setSessionStatus("CONNECTED");
       updateSession(true);
 
       timerRef.current = setInterval(() => {
-        setTimer(prev => {
+        setTimer((prev) => {
           if (prev <= 1) {
             clearInterval(timerRef.current!);
             disconnectFromRealtime();
@@ -94,7 +97,7 @@ function App() {
   };
 
   const disconnectFromRealtime = () => {
-    pcRef.current?.getSenders().forEach(s => s.track?.stop());
+    pcRef.current?.getSenders().forEach((s) => s.track?.stop());
     pcRef.current?.close();
     pcRef.current = null;
     dcRef.current = null;
@@ -117,9 +120,7 @@ function App() {
       type: "session.update",
       session: {
         modalities: ["text", "audio"],
-        instructions: `Affect/personality: A cheerful guide.
-Tone: Friendly, clear, and reassuring.
-Pronunciation: Clear and conversational.`,
+        instructions: `Affect/personality: A cheerful guide. Tone: Friendly, clear, and reassuring. Pronunciation: Clear and conversational.`,
         voice: "sage",
         input_audio_format: "pcm16",
         output_audio_format: "pcm16",
@@ -136,9 +137,13 @@ Pronunciation: Clear and conversational.`,
     });
 
     if (shouldTrigger) {
-      sendSimulatedUserMessage("Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI.");
+      sendSimulatedUserMessage(
+        "Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI."
+      );
       setTimeout(() => {
-        sendSimulatedUserMessage("Still there? You can ask me anything — like help or just say hi.");
+        sendSimulatedUserMessage(
+          "Still there? You can ask me anything — like help or just say hi."
+        );
       }, 12000);
     }
   };
@@ -150,7 +155,9 @@ Pronunciation: Clear and conversational.`,
   }, []);
 
   useEffect(() => {
-    if (selectedAgentName && sessionStatus === "DISCONNECTED") connectToRealtime();
+    if (selectedAgentName && sessionStatus === "DISCONNECTED") {
+      connectToRealtime();
+    }
   }, [selectedAgentName]);
 
   const onOrbClick = () => {
@@ -212,12 +219,7 @@ Pronunciation: Clear and conversational.`,
               onChange={e => setUserText(e.target.value)}
               placeholder="Type a message..."
               className="w-full p-3 bg-gray-800 text-white placeholder-gray-400 rounded-lg border border-gray-600"
-              onKeyDown={e => {
-                if (e.key === "Enter" && userText.trim()) {
-                  sendSimulatedUserMessage(userText.trim());
-                  setUserText("");
-                }
-              }}
+              onKeyDown={e => { if (e.key === "Enter" && userText.trim()) { sendSimulatedUserMessage(userText.trim()); setUserText(""); } }}
             />
           </div>
         )}
@@ -230,6 +232,7 @@ Pronunciation: Clear and conversational.`,
         </div>
       )}
     </div>
-);
+  );
+}
 
 export default App;
