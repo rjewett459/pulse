@@ -108,16 +108,31 @@ function App() {
   const onOrbClick = () =>
     sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
 
-  const sendSimulatedUserMessage = (text: string) => {
-    const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
-    addTranscriptMessage(id, "user", text, true);
-    sendClientEvent({
-      type: "conversation.item.create",
-      item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] },
-    });
-    sendClientEvent({ type: "response.create" });
-    setUserText("");
-  };
+   const sendSimulatedUserMessage = (text: string) => {
+  const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
+  addTranscriptMessage(id, "user", text, true);
+
+  // Send the message to the server
+  sendClientEvent({
+    type: "conversation.item.create",
+    item: {
+      id,
+      type: "message",
+      role: "user",
+      content: [{ type: "input_text", text }],
+    },
+  });
+
+  // Simulate end of user's turn like voice does
+  sendClientEvent({
+    type: "turn.marker",
+    marker: "user_end",
+  });
+
+  sendClientEvent({ type: "response.create" });
+  setUserText("");
+};
+
 
   const handleFormSuccess = () => {
     setShowShareModal(false);
