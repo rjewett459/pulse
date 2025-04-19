@@ -19,7 +19,6 @@ function App() {
   const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
   const [sessionCount, setSessionCount] = useState<number>(() => {
     if (typeof window !== "undefined") {
       const count = localStorage.getItem("voicemate_sessions") || "0";
