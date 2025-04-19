@@ -129,7 +129,7 @@ function App() {
     const start = async () => {
       await connectToRealtime();
       const waitForConnection = () =>
-        new Promise((resolve) => {
+        new Promise<void>((resolve) => {
           const interval = setInterval(() => {
             if (dcRef.current?.readyState === "open") {
               clearInterval(interval);
