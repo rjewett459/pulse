@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
@@ -104,6 +104,10 @@ function App() {
     localStorage.setItem("voicemate_sessions", next.toString());
     connectToRealtime();
   };
+
+  useEffect(() => {
+    connectToRealtime();
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col relative pb-24">
