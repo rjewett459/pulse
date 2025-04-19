@@ -10,7 +10,6 @@ import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 import { createRealtimeConnection } from "./lib/realtimeConnection";
 import allAgentSets from "@/app/agentConfigs";
 import Transcript from "./components/Transcript";
-import SharePulse from "./components/SharePulse";
 import EndSessionForm from "./components/EndSessionForm";
 import { AgentConfig } from "@/app/types";
 
