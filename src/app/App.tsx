@@ -30,7 +30,7 @@ function App() {
   const pcRef = useRef(null);
   const audioElemRef = useRef(null);
 
-  const sendClientEvent = (obj) => {
+  const sendClientEvent = (obj: any) => {
     if (dcRef.current?.readyState === "open") {
       logClientEvent(obj);
       dcRef.current.send(JSON.stringify(obj));
