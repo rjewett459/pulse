@@ -1,75 +1,96 @@
-"use client";
-
 import React, { useState } from "react";
 
 interface EndSessionFormProps {
-  open: boolean;
-  onClose: () => void;
+  onSubmitSuccess: () => void;
 }
 
-const EndSessionForm: React.FC<EndSessionFormProps> = ({ open, onClose }) => {
+const EndSessionForm: React.FC<EndSessionFormProps> = ({ onSubmitSuccess }) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
+
   const [submitted, setSubmitted] = useState(false);
 
-  if (!open) return null;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const isValid = formData.name && formData.email && formData.phone;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValid) return;
+
+    try {
+      const response = await fetch("https://formspree.io/f/mjkyqqgj", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+        onSubmitSuccess();
+      }
+    } catch (err) {
+      console.error("Form submission error:", err);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="text-center text-white">
+        <h2 className="text-xl font-bold">✅ You're good to go!</h2>
+        <p className="text-sm text-gray-300 mt-2">Thanks for your info.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white text-black p-6 rounded-2xl max-w-md w-full shadow-xl">
-        {submitted ? (
-          <div className="text-center">
-            <h2 className="text-xl font-bold mb-2">✅ Thank you!</h2>
-            <p className="text-gray-700">We’ve received your details. We’ll be in touch soon.</p>
-            <button
-              onClick={onClose}
-              className="mt-4 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800"
-            >
-              Close
-            </button>
-          </div>
-        ) : (
-          <form
-            action="https://formspree.io/f/mjkyqqgj"
-            method="POST"
-            onSubmit={() => setSubmitted(true)}
-          >
-            <h2 className="text-xl font-bold mb-4">Let’s stay connected</h2>
-            <label className="block mb-2">
-              <span className="block text-sm font-medium text-gray-700">Your Name</span>
-              <input
-                type="text"
-                name="name"
-                required
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-black focus:border-black"
-              />
-            </label>
-            <label className="block mb-2">
-              <span className="block text-sm font-medium text-gray-700">Email Address</span>
-              <input
-                type="email"
-                name="email"
-                required
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-black focus:border-black"
-              />
-            </label>
-            <label className="block mb-4">
-              <span className="block text-sm font-medium text-gray-700">Phone Number</span>
-              <input
-                type="tel"
-                name="phone"
-                required
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-black focus:border-black"
-              />
-            </label>
-            <button
-              type="submit"
-              className="w-full bg-black text-white py-2 rounded-full hover:bg-gray-800"
-            >
-              Submit
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
+    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+      <h2 className="text-xl font-bold mb-4">⚠️ Before continuing, please share your info</h2>
+
+      <input
+        type="text"
+        name="name"
+        placeholder="Your name"
+        value={formData.name}
+        onChange={handleChange}
+        className="w-full mb-3 p-2 border rounded"
+        required
+      />
+      <input
+        type="email"
+        name="email"
+        placeholder="Your email"
+        value={formData.email}
+        onChange={handleChange}
+        className="w-full mb-3 p-2 border rounded"
+        required
+      />
+      <input
+        type="tel"
+        name="phone"
+        placeholder="Phone number"
+        value={formData.phone}
+        onChange={handleChange}
+        className="w-full mb-4 p-2 border rounded"
+        required
+      />
+
+      <button
+        type="submit"
+        disabled={!isValid}
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
+      >
+        Continue
+      </button>
+    </form>
   );
 };
 
