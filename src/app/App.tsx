@@ -28,12 +28,12 @@ function App() {
     return 0;
   });
 
-  // Manage transcript width for responsive layout
-  const [transcriptWidth, setTranscriptWidth] = useState<number>(0);
+  // Responsive transcript width
+  const [transcriptWidth, setTranscriptWidth] = useState(0);
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const containerPadding = 16 * 2; // px-4 on both sides
-      setTranscriptWidth(window.innerWidth - containerPadding);
+      const padding = 16 * 2; // px-4 on both sides
+      setTranscriptWidth(window.innerWidth - padding);
     }
   }, []);
 
@@ -147,13 +147,9 @@ function App() {
     });
 
     if (shouldTrigger) {
-      sendSimulatedUserMessage(
-        "Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI."
-      );
+      sendSimulatedUserMessage("Welcome! You have three minutes of Sage AI.");
       setTimeout(() => {
-        sendSimulatedUserMessage(
-          "Still there? You can ask me anything — like help or just say hi."
-        );
+        sendSimulatedUserMessage("Still there? Ask me anything or just say hi.");
       }, 12000);
     }
   };
@@ -194,30 +190,23 @@ function App() {
         </div>
         {sessionStatus === "CONNECTED" && (
           <div className="mt-2 sm:mt-0 text-sm">
-            ⏳ {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
-          }</div>
+            ⏳ {Math.floor(timer/60)}:{String(timer%60).padStart(2, "0")}
+          </div>
+        )}
       </header>
 
       {/* Orb */}
       <div className="flex flex-col items-center py-6">
         <motion.div
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
-          animate={
-            sessionStatus === "CONNECTED"
-              ? { scale: [1, 1.05, 1], opacity: 1 }
-              : { scale: 1, opacity: 0.4 }
-          }
-          transition={
-            sessionStatus === "CONNECTED"
-              ? { duration: 1.2, repeat: Infinity }
-              : { duration: 0 }
-          }
+          animate={ sessionStatus==="CONNECTED" ? { scale:[1,1.05,1], opacity:1 } : { scale:1, opacity:0.4 } }
+          transition={ sessionStatus==="CONNECTED" ? { duration:1.2, repeat:Infinity } : { duration:0 } }
           onClick={onOrbClick}
         />
         <p className="text-xs text-gray-400 mt-2">
-          {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
-          {sessionStatus === "CONNECTING" && "⏳ Connecting..."}
-          {sessionStatus === "CONNECTED" && "🤔 Thinking..."} സ്ക
+          {sessionStatus==="DISCONNECTED" && "🔌 Disconnected"}
+          {sessionStatus==="CONNECTING"   && "⏳ Connecting..."}
+          {sessionStatus==="CONNECTED"    && "🤔 Thinking..."}
         </p>
       </div>
 
@@ -227,27 +216,21 @@ function App() {
           <Transcript
             userText={userText}
             setUserText={setUserText}
-            onSendMessage={() => {}}
+            onSendMessage={()=>{}}
             canSend={false}
             transcriptWidth={transcriptWidth}
             setTranscriptWidth={setTranscriptWidth}
           />
         </div>
-
         {!showShareModal && (
           <div className="mt-2">
             <input
               type="text"
               value={userText}
-              onChange={(e) => setUserText(e.target.value)}
+              onChange={e=>setUserText(e.target.value)}
               placeholder="Type a message..."
               className="w-full p-3 bg-gray-800 text-white placeholder-gray-400 rounded-lg border border-gray-600"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && userText.trim()) {
-                  sendSimulatedUserMessage(userText.trim());
-                  setUserText("");
-                }
-              }}
+              onKeyDown={e=>{if(e.key==="Enter"&&userText.trim()){sendSimulatedUserMessage(userText.trim());setUserText("")}}}
             />
           </div>
         )}
