@@ -127,6 +127,7 @@ function App() {
       : Math.random().toString(36).substring(2, 10);
 
     addTranscriptMessage(id, "user", intro, true);
+
     sendClientEvent({
       type: "conversation.item.create",
       item: {
@@ -136,11 +137,16 @@ function App() {
         content: [{ type: "input_text", text: intro }],
       },
     });
-    sendClientEvent({ type: "response.create" });
+
+    // ⏳ Short delay to ensure the AI responds fully
+    setTimeout(() => {
+      sendClientEvent({ type: "response.create" });
+    }, 500);
   };
 
   start();
 }, []);
+
 
 
   return (
