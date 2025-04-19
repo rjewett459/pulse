@@ -1,51 +1,37 @@
+// ═══ App.tsx ═════════════════════════════════
 "use client";
-/* eslint-disable @typescript-eslint/no-unused-expressions */
 
 import React, { useEffect, useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 import { createRealtimeConnection } from "./lib/realtimeConnection";
-import allAgentSets from "@/app/agentConfigs";
 import Transcript from "./components/Transcript";
 import EndSessionForm from "./components/EndSessionForm";
-import { AgentConfig } from "@/app/types";
 
 function App() {
-  // -- State --
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [sessionCount, setSessionCount] = useState<number>(() => {
+  const [sessionCount, setSessionCount] = useState(() => {
     if (typeof window !== "undefined") {
       return parseInt(localStorage.getItem("voicemate_sessions") || "0", 10);
     }
     return 0;
   });
 
-  // Transcript width
-  const [transcriptWidth, setTranscriptWidth] = useState(0);
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const padding = 16 * 2;
-      setTranscriptWidth(window.innerWidth - padding);
-    }
-  }, []);
-
   const [userText, setUserText] = useState("");
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
-  // Refs
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const dcRef = useRef<RTCDataChannel | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const audioElemRef = useRef<HTMLAudioElement | null>(null);
+  const timerRef = useRef(null);
+  const dcRef = useRef(null);
+  const pcRef = useRef(null);
+  const audioElemRef = useRef(null);
 
-  const sendClientEvent = (obj: any) => {
+  const sendClientEvent = (obj) => {
     if (dcRef.current?.readyState === "open") {
       logClientEvent(obj);
       dcRef.current.send(JSON.stringify(obj));
@@ -54,7 +40,6 @@ function App() {
 
   const handleServerEventRef = useHandleServerEvent({ sendClientEvent, setSessionStatus });
 
-  // Connect / Disconnect
   const connectToRealtime = async () => {
     if (sessionStatus !== "DISCONNECTED") return;
     if (sessionCount >= 2) return setShowShareModal(true);
@@ -69,11 +54,10 @@ function App() {
       dcRef.current = dc;
       dc.addEventListener("message", (e) => handleServerEventRef.current(JSON.parse(e.data)));
       setSessionStatus("CONNECTED");
-      // Start timer
       timerRef.current = setInterval(() => {
         setTimer((t) => {
           if (t <= 1) {
-            clearInterval(timerRef.current!);
+            clearInterval(timerRef.current);
             disconnectFromRealtime();
             setShowShareModal(true);
             return 0;
@@ -97,16 +81,14 @@ function App() {
   const onOrbClick = () =>
     sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
 
-  // Simulated user message
-  const sendSimulatedUserMessage = (text: string) => {
-    const id = uuidv4();
+  const sendSimulatedUserMessage = (text) => {
+    const id = crypto.randomUUID();
     addTranscriptMessage(id, "user", text, true);
     sendClientEvent({ type: "conversation.item.create", item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] } });
     sendClientEvent({ type: "response.create" });
     setUserText("");
   };
 
-  // Handle form success
   const handleFormSuccess = () => {
     setShowShareModal(false);
     setTimer(180);
@@ -118,7 +100,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col relative pb-24">
-      {/* Header */}
       <header className="flex flex-col sm:flex-row items-center justify-between px-4 pt-4">
         <div className="flex items-center gap-3">
           <Image src="/voicemate.svg" alt="Logo" width={36} height={36} />
@@ -134,7 +115,6 @@ function App() {
         )}
       </header>
 
-      {/* Orb */}
       <div className="flex justify-center items-center py-6">
         <motion.div
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
@@ -149,19 +129,10 @@ function App() {
         </p>
       </div>
 
-      {/* Transcript */}
       <div className="flex-1 overflow-y-auto px-4">
-        <Transcript
-          userText={userText}
-          setUserText={setUserText}
-          onSendMessage={() => sendSimulatedUserMessage(userText)}
-          canSend
-          transcriptWidth={transcriptWidth}
-          setTranscriptWidth={setTranscriptWidth}
-        />
+        <Transcript onSendMessage={() => sendSimulatedUserMessage(userText)} />
       </div>
 
-      {/* Fixed Input */}
       {!showShareModal && (
         <div className="fixed bottom-0 left-0 w-full bg-black border-t border-gray-700 px-4 py-3">
           <input
@@ -175,14 +146,12 @@ function App() {
         </div>
       )}
 
-      {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/80 z-50">
           <EndSessionForm onSubmitSuccess={handleFormSuccess} />
         </div>
       )}
 
-      {/* Global Styles for Copy Button */}
       <style jsx global>{`
         .copy-button {
           background: linear-gradient(90deg, #7F00FF, #E100FF);
@@ -204,3 +173,85 @@ function App() {
 }
 
 export default App;
+
+
+// ═══ components/Transcript.tsx ══════════════════════
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import { useTranscript } from "@/app/contexts/TranscriptContext";
+
+function Transcript({ onSendMessage }) {
+  const { transcriptItems, toggleTranscriptItemExpand } = useTranscript();
+  const transcriptRef = useRef(null);
+  const [justCopied, setJustCopied] = useState(false);
+
+  useEffect(() => {
+    if (transcriptRef.current) {
+      transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
+    }
+  }, [transcriptItems]);
+
+  const handleCopy = async () => {
+    if (!transcriptRef.current) return;
+    try {
+      await navigator.clipboard.writeText(transcriptRef.current.innerText);
+      setJustCopied(true);
+      setTimeout(() => setJustCopied(false), 1500);
+    } catch {}
+  };
+
+  return (
+    <div className="flex flex-col flex-1 bg-white/5 backdrop-blur-md min-h-0 rounded-2xl border border-white/10 shadow-lg p-4">
+      <button onClick={handleCopy} className="copy-button self-end mb-2">
+        {justCopied ? "✅ Copied!" : "📋 Copy"}
+      </button>
+      <div ref={transcriptRef} className="overflow-auto flex flex-col gap-y-4 flex-1">
+        {transcriptItems.map((item) => {
+          if (item.isHidden) return null;
+          const { itemId, type, role, timestamp, title = "", data, expanded } = item;
+          if (type === "MESSAGE") {
+            const isUser = role === "user";
+            const container = `flex flex-col ${isUser ? 'items-end' : 'items-start'}`;
+            const bubble = `max-w-lg p-3 rounded-xl ${isUser ? 'bg-gray-900 text-gray-100' : 'bg-gray-800 text-gray-100'}`;
+            const bracketed = title.startsWith('[') && title.endsWith(']');
+            const display = bracketed ? title.slice(1, -1) : title;
+            const style = bracketed ? 'italic text-gray-400' : '';
+            return (
+              <div key={itemId} className={container}>
+                <div className={bubble}>
+                  <div className={`text-xs ${isUser ? 'text-gray-400' : 'text-gray-500'} font-mono`}>{timestamp}</div>
+                  <div className={`whitespace-pre-wrap ${style}`}><ReactMarkdown>{display}</ReactMarkdown></div>
+                </div>
+              </div>
+            );
+          }
+          if (type === "BREADCRUMB") {
+            return (
+              <div key={itemId} className="flex flex-col items-start text-gray-500 text-sm">
+                <span className="text-xs font-mono">{timestamp}</span>
+                <div className={`whitespace-pre-wrap flex items-center font-mono text-sm text-gray-800 ${data ? 'cursor-pointer' : ''}`} onClick={() => data && toggleTranscriptItemExpand(itemId)}>
+                  {data && <span className={`text-gray-400 mr-1 transform transition-transform ${expanded ? 'rotate-90' : 'rotate-0'}`}>▶</span>}
+                  {title}
+                </div>
+                {expanded && data && (
+                  <pre className="border-l-2 ml-1 border-gray-200 whitespace-pre-wrap break-words font-mono text-xs mb-2 mt-2 pl-2">
+                    {JSON.stringify(data, null, 2)}
+                  </pre>
+                )}
+              </div>
+            );
+          }
+          return (
+            <div key={itemId} className="flex justify-center text-gray-500 text-sm italic font-mono">
+              Unknown: {type} <span className="ml-2 text-xs">{timestamp}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export default Transcript;
