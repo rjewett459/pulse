@@ -221,7 +221,7 @@ function App() {
         </p>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden flex-col-reverse">
         <Transcript
           userText={userText}
           setUserText={setUserText}
