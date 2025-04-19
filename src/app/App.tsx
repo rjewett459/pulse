@@ -106,9 +106,7 @@ function App() {
   };
 
   const sendSimulatedUserMessage = (text: string) => {
-    const id = typeof crypto?.randomUUID === "function"
-      ? crypto.randomUUID()
-      : Math.random().toString(36).substring(2, 10);
+    const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
     addTranscriptMessage(id, "user", text, true);
     sendClientEvent({
       type: "conversation.item.create",
@@ -144,12 +142,9 @@ function App() {
       await waitForConnection();
 
       const intro = "Hey there, it’s great to have you here. I’m ready to help. What would you like to talk about?";
-      const id = typeof crypto?.randomUUID === "function"
-        ? crypto.randomUUID()
-        : Math.random().toString(36).substring(2, 10);
+      const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
 
       addTranscriptMessage(id, "user", intro, true);
-
       sendClientEvent({
         type: "conversation.item.create",
         item: {
@@ -162,7 +157,7 @@ function App() {
 
       setTimeout(() => {
         sendClientEvent({ type: "response.create" });
-      }, 1000);
+      }, 500);
     };
 
     start();
@@ -190,6 +185,9 @@ function App() {
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 shadow-2xl cursor-pointer"
           animate={sessionStatus === "CONNECTED" ? { scale: [1, 1.05, 1], opacity: 1 } : { scale: 1, opacity: 0.4 }}
           transition={sessionStatus === "CONNECTED" ? { duration: 1.2, repeat: Infinity } : { duration: 0 }}
+          onClick={() => {
+            sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
+          }}
         />
         <p className="text-gray-400 text-sm mt-4 text-center w-full">
           {sessionStatus === "DISCONNECTED" && "🔌 Disconnected"}
