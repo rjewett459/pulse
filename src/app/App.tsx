@@ -19,6 +19,15 @@ function App() {
   const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<AgentConfig[] | null>(null);
   const [timer, setTimer] = useState(180);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [sessionCount, setSessionCount] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const count = localStorage.getItem("voicemate_sessions") || "0";
+      return parseInt(count);
+    }
+    return 0;
+  });
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const dcRef = useRef<RTCDataChannel | null>(null);
@@ -48,6 +57,10 @@ function App() {
 
   const connectToRealtime = async () => {
     if (sessionStatus !== "DISCONNECTED") return;
+    if (sessionCount >= 2) {
+      setShowShareModal(true);
+      return;
+    }
     setSessionStatus("CONNECTING");
 
     try {
@@ -106,7 +119,6 @@ function App() {
 
   const updateSession = (shouldTrigger = false) => {
     sendClientEvent({ type: "input_audio_buffer.clear" });
-
     sendClientEvent({
       type: "session.update",
       session: {
@@ -139,7 +151,6 @@ function App() {
 
     if (shouldTrigger) {
       sendSimulatedUserMessage("Hey there, it’s great to have you here. Please enjoy three minutes of our amazing voice AI. You can ask me about almost anything.");
-
       setTimeout(() => {
         sendSimulatedUserMessage("Still there? You can ask me anything — like help with something, or just say hi.");
       }, 12000);
@@ -161,6 +172,15 @@ function App() {
   const onOrbClick = () => {
     if (sessionStatus === "DISCONNECTED") connectToRealtime();
     else disconnectFromRealtime();
+  };
+
+  const handleFormSuccess = () => {
+    setShowShareModal(false);
+    setTimer(180);
+    const newCount = sessionCount + 1;
+    setSessionCount(newCount);
+    localStorage.setItem("voicemate_sessions", newCount.toString());
+    connectToRealtime();
   };
 
   return (
@@ -202,7 +222,7 @@ function App() {
         </p>
       </div>
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         <Transcript
           userText={userText}
           setUserText={setUserText}
@@ -214,8 +234,8 @@ function App() {
       </div>
 
       {showShareModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
-          <EndSessionForm onSubmitSuccess={() => setShowShareModal(false)} />
+        <div className="absolute inset-0 flex justify-center items-center bg-black/80 z-50">
+          <EndSessionForm onSubmitSuccess={handleFormSuccess} />
         </div>
       )}
     </div>
