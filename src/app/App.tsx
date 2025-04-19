@@ -25,7 +25,7 @@ function App() {
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
-  const timerRef = useRef(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const audioElemRef = useRef<HTMLAudioElement | null>(null);
