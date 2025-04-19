@@ -11,6 +11,7 @@ export interface UseHandleServerEventParams {
   selectedAgentConfigSet: AgentConfig[] | null;
   sendClientEvent: (eventObj: any, eventNameSuffix?: string) => void;
   setSelectedAgentName: (name: string) => void;
+  audioElemRef?: React.MutableRefObject<HTMLAudioElement | null>;
   shouldForceResponse?: boolean;
 }
 
@@ -20,6 +21,7 @@ export function useHandleServerEvent({
   selectedAgentConfigSet,
   sendClientEvent,
   setSelectedAgentName,
+  audioElemRef,
 }: UseHandleServerEventParams) {
   const {
     transcriptItems,
@@ -156,6 +158,23 @@ export function useHandleServerEvent({
         const deltaText = serverEvent.delta || "";
         if (itemId) {
           updateTranscriptMessage(itemId, deltaText, true);
+        }
+        break;
+      }
+
+      case "response.output.audio_url": {
+        const audioUrl = serverEvent.audio_url;
+        if (audioUrl) {
+          try {
+            if (audioElemRef?.current) {
+              audioElemRef.current.src = audioUrl;
+              audioElemRef.current.play();
+            } else {
+              new Audio(audioUrl).play();
+            }
+          } catch (err) {
+            console.error("Audio playback failed:", err);
+          }
         }
         break;
       }
