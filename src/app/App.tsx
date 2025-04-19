@@ -105,7 +105,7 @@ function App() {
     setSessionStatus("DISCONNECTED");
   };
 
-  const sendSimulatedUserMessage = (text) => {
+  const sendSimulatedUserMessage = (text: string) => {
     const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
     addTranscriptMessage(id, "user", text, true);
     sendClientEvent({
