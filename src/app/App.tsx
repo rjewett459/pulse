@@ -108,6 +108,19 @@ function App() {
   useEffect(() => {
   const start = async () => {
     await connectToRealtime();
+
+    const waitForConnection = () =>
+      new Promise<void>((resolve) => {
+        const interval = setInterval(() => {
+          if (dcRef.current?.readyState === "open") {
+            clearInterval(interval);
+            resolve();
+          }
+        }, 100);
+      });
+
+    await waitForConnection();
+
     const intro = "Hey there, it’s great to have you here. I’m ready to help. What would you like to talk about?";
     const id = typeof crypto?.randomUUID === "function"
       ? crypto.randomUUID()
