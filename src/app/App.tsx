@@ -52,13 +52,34 @@ function App() {
     try {
       const { client_secret } = await (await fetch("/api/session")).json();
       if (!client_secret?.value) throw new Error();
-      if (!audioElemRef.current) audioElemRef.current = document.createElement("audio");
+      if (!audioElemRef.current) audioElemRef.current = new Audio();
       audioElemRef.current.autoplay = true;
       const { pc, dc } = await createRealtimeConnection(client_secret.value, audioElemRef);
       pcRef.current = pc;
       dcRef.current = dc;
       dc.addEventListener("message", (e) => handleServerEventRef.current(JSON.parse(e.data)));
       setSessionStatus("CONNECTED");
+
+      sendClientEvent({
+        type: "session.update",
+        session: {
+          modalities: ["text", "audio"],
+          instructions: `You're a friendly, helpful assistant. Engage proactively and speak clearly.`,
+          voice: "sage",
+          input_audio_format: "pcm16",
+          output_audio_format: "pcm16",
+          input_audio_transcription: { model: "whisper-1" },
+          turn_detection: {
+            type: "server_vad",
+            threshold: 0.5,
+            prefix_padding_ms: 500,
+            silence_duration_ms: 200,
+            create_response: true,
+          },
+          tools: [],
+        },
+      });
+
       timerRef.current = setInterval(() => {
         setTimer((t) => {
           if (t <= 1) {
@@ -106,48 +127,45 @@ function App() {
   };
 
   useEffect(() => {
-  const start = async () => {
-    await connectToRealtime();
+    const start = async () => {
+      await connectToRealtime();
 
-    const waitForConnection = () =>
-      new Promise<void>((resolve) => {
-        const interval = setInterval(() => {
-          if (dcRef.current?.readyState === "open") {
-            clearInterval(interval);
-            resolve();
-          }
-        }, 100);
+      const waitForConnection = () =>
+        new Promise<void>((resolve) => {
+          const interval = setInterval(() => {
+            if (dcRef.current?.readyState === "open") {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 100);
+        });
+
+      await waitForConnection();
+
+      const intro = "Hey there, it’s great to have you here. I’m ready to help. What would you like to talk about?";
+      const id = typeof crypto?.randomUUID === "function"
+        ? crypto.randomUUID()
+        : Math.random().toString(36).substring(2, 10);
+
+      addTranscriptMessage(id, "user", intro, true);
+
+      sendClientEvent({
+        type: "conversation.item.create",
+        item: {
+          id,
+          type: "message",
+          role: "user",
+          content: [{ type: "input_text", text: intro }],
+        },
       });
 
-    await waitForConnection();
+      setTimeout(() => {
+        sendClientEvent({ type: "response.create" });
+      }, 1000);
+    };
 
-    const intro = "Hey there, it’s great to have you here. I’m ready to help. What would you like to talk about?";
-    const id = typeof crypto?.randomUUID === "function"
-      ? crypto.randomUUID()
-      : Math.random().toString(36).substring(2, 10);
-
-    addTranscriptMessage(id, "user", intro, true);
-
-    sendClientEvent({
-      type: "conversation.item.create",
-      item: {
-        id,
-        type: "message",
-        role: "user",
-        content: [{ type: "input_text", text: intro }],
-      },
-    });
-
-    // ⏳ Short delay to ensure the AI responds fully
-    setTimeout(() => {
-      sendClientEvent({ type: "response.create" });
-    }, 500);
-  };
-
-  start();
-}, []);
-
-
+    start();
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col relative pb-24">
