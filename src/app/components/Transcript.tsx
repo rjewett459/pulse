@@ -10,10 +10,10 @@ function Transcript() {
   const [justCopied, setJustCopied] = useState(false);
 
   useEffect(() => {
-    if (transcriptRef.current) {
-      transcriptRef.current.scrollTop = 0;
-    }
-  }, [transcriptItems]);
+  if (transcriptRef.current) {
+    transcriptRef.current.scrollTop = 0;
+  }
+}, [transcriptItems]);
 
   const handleCopy = async () => {
     if (!transcriptRef.current) return;
@@ -38,7 +38,7 @@ function Transcript() {
       </div>
       <div
         ref={transcriptRef}
-        className="flex-1 overflow-y-auto p-4 flex flex-col-reverse gap-y-4"
+        className="flex-1 overflow-y-auto p-4 flex flex-col gap-y-4"
       >
         {[...transcriptItems].reverse().map((item) => {
           if (item.isHidden) return null;

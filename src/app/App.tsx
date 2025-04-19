@@ -106,8 +106,29 @@ function App() {
   };
 
   useEffect(() => {
-    connectToRealtime();
-  }, []);
+  const start = async () => {
+    await connectToRealtime();
+    const intro = "Hey there, it’s great to have you here. I’m ready to help. What would you like to talk about?";
+    const id = typeof crypto?.randomUUID === "function"
+      ? crypto.randomUUID()
+      : Math.random().toString(36).substring(2, 10);
+
+    addTranscriptMessage(id, "user", intro, true);
+    sendClientEvent({
+      type: "conversation.item.create",
+      item: {
+        id,
+        type: "message",
+        role: "user",
+        content: [{ type: "input_text", text: intro }],
+      },
+    });
+    sendClientEvent({ type: "response.create" });
+  };
+
+  start();
+}, []);
+
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col relative pb-24">
