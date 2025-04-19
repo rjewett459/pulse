@@ -1,19 +1,13 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import Image from "next/image";
-import { motion } from "framer-motion";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 import { createRealtimeConnection } from "./lib/realtimeConnection";
-import Transcript from "./components/Transcript";
-import EndSessionForm from "./components/EndSessionForm";
 
 function App() {
   const [sessionStatus, setSessionStatus] = useState("DISCONNECTED");
-  const [timer, setTimer] = useState(180);
-  const [showShareModal, setShowShareModal] = useState(false);
   const [sessionCount, setSessionCount] = useState(() => {
     if (typeof window !== "undefined") {
       return parseInt(localStorage.getItem("voicemate_sessions") || "0", 10);
@@ -21,7 +15,6 @@ function App() {
     return 0;
   });
 
-  const [userText, setUserText] = useState("");
   const { addTranscriptMessage } = useTranscript();
   const { logClientEvent } = useEvent();
 
@@ -43,12 +36,12 @@ function App() {
     selectedAgentName: "",
     selectedAgentConfigSet: null,
     setSelectedAgentName: () => {},
-    audioElemRef, // make sure this is passed for audio playback
+    audioElemRef,
   });
 
   const connectToRealtime = async () => {
     if (sessionStatus !== "DISCONNECTED") return;
-    if (sessionCount >= 2) return setShowShareModal(true);
+    if (sessionCount >= 2) return;
     setSessionStatus("CONNECTING");
     try {
       const { client_secret } = await (await fetch("/api/session")).json();
@@ -80,51 +73,9 @@ function App() {
           tools: [],
         },
       });
-
-      timerRef.current = setInterval(() => {
-        setTimer((t) => {
-          if (t <= 1) {
-            if (timerRef.current) clearInterval(timerRef.current);
-            disconnectFromRealtime();
-            setShowShareModal(true);
-            return 0;
-          }
-          return t - 1;
-        });
-      }, 1000);
     } catch {
       setSessionStatus("DISCONNECTED");
     }
-  };
-
-  const disconnectFromRealtime = () => {
-    pcRef.current?.getSenders().forEach((s) => s.track?.stop());
-    pcRef.current?.close();
-    pcRef.current = null;
-    dcRef.current = null;
-    setSessionStatus("DISCONNECTED");
-  };
-
-  const onOrbClick = () =>
-    sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
-
-  const sendSimulatedUserMessage = (text: string) => {
-    const id = typeof crypto?.randomUUID === "function"
-      ? crypto.randomUUID()
-      : Math.random().toString(36).substring(2, 10);
-    addTranscriptMessage(id, "user", text, true);
-    sendClientEvent({ type: "conversation.item.create", item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] } });
-    sendClientEvent({ type: "response.create" });
-    setUserText("");
-  };
-
-  const handleFormSuccess = () => {
-    setShowShareModal(false);
-    setTimer(180);
-    const next = sessionCount + 1;
-    setSessionCount(next);
-    localStorage.setItem("voicemate_sessions", next.toString());
-    connectToRealtime();
   };
 
   useEffect(() => {
@@ -168,11 +119,7 @@ function App() {
     start();
   }, []);
 
-  return (
-    <div className="min-h-screen bg-black text-white flex flex-col relative pb-24">
-      {/* UI elements stay unchanged */}
-    </div>
-  );
+  return null; // Minimal UI for now (replace with your own)
 }
 
 export default App;
