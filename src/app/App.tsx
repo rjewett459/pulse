@@ -105,6 +105,9 @@ function App() {
     setSessionStatus("DISCONNECTED");
   };
 
+  const onOrbClick = () =>
+    sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
+
   const sendSimulatedUserMessage = (text: string) => {
     const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
     addTranscriptMessage(id, "user", text, true);
@@ -115,9 +118,6 @@ function App() {
     sendClientEvent({ type: "response.create" });
     setUserText("");
   };
-
-  const onOrbClick = () =>
-    sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
 
   const handleFormSuccess = () => {
     setShowShareModal(false);
@@ -131,7 +131,6 @@ function App() {
   useEffect(() => {
     const start = async () => {
       await connectToRealtime();
-
       const waitForConnection = () =>
         new Promise<void>((resolve) => {
           const interval = setInterval(() => {
@@ -195,7 +194,8 @@ function App() {
         <Transcript
           userText={userText}
           setUserText={setUserText}
-          onSendMessage={sendSimulatedUserMessage}
+          onSendMessage={() => sendSimulatedUserMessage(userText)}
+          canSend={sessionStatus === "CONNECTED" && dcRef.current?.readyState === "open"}
         />
       </div>
 
@@ -204,6 +204,23 @@ function App() {
           <EndSessionForm onSubmitSuccess={handleFormSuccess} />
         </div>
       )}
+
+      <style jsx global>{`
+        .copy-button {
+          background: linear-gradient(90deg, #6EE7B7, #3B82F6);
+          color: white;
+          border-radius: 9999px;
+          padding: 0.5rem 1rem;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+          border: none;
+          cursor: pointer;
+          transition: transform 0.15s ease-in-out;
+        }
+        .copy-button:hover {
+          transform: scale(1.05);
+        }
+      `}</style>
     </div>
   );
 }
