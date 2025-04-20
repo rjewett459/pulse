@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { TranscriptItem } from "@/app/types";
-import Image from "next/image";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 
 function Transcript() {
