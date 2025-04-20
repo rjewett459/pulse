@@ -112,32 +112,25 @@ export function useHandleServerEvent({
         if (serverEvent.session?.id) {
           setSessionStatus("CONNECTED");
           addTranscriptBreadcrumb(
-            `session.id: ${
-              serverEvent.session.id
-            }\nStarted at: ${new Date().toLocaleString()}`
+            `session.id: ${serverEvent.session.id}\nStarted at: ${new Date().toLocaleString()}`
           );
         }
         break;
       }
 
       case "conversation.item.created": {
-        let text =
+        const text =
           serverEvent.item?.content?.[0]?.text ||
           serverEvent.item?.content?.[0]?.transcript ||
           "";
         const role = serverEvent.item?.role as "user" | "assistant";
         const itemId = serverEvent.item?.id;
 
-        if (itemId && transcriptItems.some((item) => item.itemId === itemId)) {
-          break;
-        }
+        const alreadyExists = transcriptItems.some((item) => item.itemId === itemId);
+        if (!itemId || !role || alreadyExists) break;
 
-        if (itemId && role) {
-          if (role === "user" && !text) {
-            text = "[Transcribing...]";
-          }
-          addTranscriptMessage(itemId, role, text);
-        }
+        const fallbackText = role === "user" && !text ? "[Transcribing...]" : text;
+        addTranscriptMessage(itemId, role, fallbackText);
         break;
       }
 
