@@ -5,11 +5,24 @@ import ReactMarkdown from "react-markdown";
 import { TranscriptItem } from "@/app/types";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 
-function Transcript() {
+export interface TranscriptProps {
+  userText: string;
+  setUserText: (val: string) => void;
+  onSendMessage: () => void;
+  canSend: boolean;
+}
+
+function Transcript({
+  userText,
+  setUserText,
+  onSendMessage,
+  canSend,
+}: TranscriptProps) {
   const { transcriptItems, toggleTranscriptItemExpand } = useTranscript();
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const [prevLogs, setPrevLogs] = useState<TranscriptItem[]>([]);
   const [justCopied, setJustCopied] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   function scrollToBottom() {
     if (transcriptRef.current) {
@@ -33,6 +46,12 @@ function Transcript() {
 
     setPrevLogs(transcriptItems);
   }, [transcriptItems]);
+
+  useEffect(() => {
+    if (canSend && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [canSend]);
 
   const handleCopyTranscript = async () => {
     if (!transcriptRef.current) return;
@@ -60,16 +79,7 @@ function Transcript() {
           className="overflow-auto p-4 flex flex-col gap-y-4 h-full"
         >
           {transcriptItems.map((item) => {
-            const {
-              itemId,
-              type,
-              role,
-              data,
-              expanded,
-              timestamp,
-              title = "",
-              isHidden,
-            } = item;
+            const { itemId, type, role, data, expanded, timestamp, title = "", isHidden } = item;
 
             if (isHidden) return null;
 
@@ -156,6 +166,29 @@ function Transcript() {
             }
           })}
         </div>
+      </div>
+
+      <div className="p-4 flex items-center gap-x-2 flex-shrink-0 border-t border-gray-200">
+        <input
+          ref={inputRef}
+          type="text"
+          value={userText}
+          onChange={(e) => setUserText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && canSend) {
+              onSendMessage();
+            }
+          }}
+          className="flex-1 px-4 py-2 focus:outline-none"
+          placeholder="Type a message..."
+        />
+        <button
+          onClick={onSendMessage}
+          disabled={!canSend || !userText.trim()}
+          className="bg-gray-900 text-white rounded-full px-4 py-2 disabled:opacity-50"
+        >
+          Send
+        </button>
       </div>
     </div>
   );
