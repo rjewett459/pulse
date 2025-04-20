@@ -1,61 +1,47 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 
-interface TranscriptProps {
-  userText: string;
-  setUserText: (text: string) => void;
-  onSendMessage: (text: string) => void;
-}
+type TranscriptProps = {
+  userText?: string;
+  setUserText?: (text: string) => void;
+  onSendMessage?: () => void;
+  canSend?: boolean;
+};
 
-const Transcript: React.FC<TranscriptProps> = ({
+export default function Transcript({
   userText,
   setUserText,
   onSendMessage,
-}) => {
+  canSend,
+}: TranscriptProps) {
   const { transcriptItems } = useTranscript();
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0; // Newest on top
     }
   }, [transcriptItems]);
 
   return (
-    <div className="flex flex-col space-y-2 pb-28">
-      {[...transcriptItems].map((item) => (
+    <div
+      ref={containerRef}
+      className="flex flex-col-reverse gap-3 overflow-y-auto h-full pb-24"
+    >
+      {[...transcriptItems].reverse().map((item) => (
         <div
           key={item.itemId}
-          className={`px-4 py-2 rounded-lg max-w-[90%] ${
+          className={`p-3 rounded-xl max-w-xl ${
             item.role === "user"
-              ? "bg-blue-600 self-end text-white"
-              : "bg-gray-700 self-start text-white"
+              ? "bg-blue-600 text-white self-end"
+              : "bg-gray-200 text-black self-start"
           }`}
         >
-          {item.text}
+          {item.text ?? "[No text]"}
         </div>
       ))}
-
-      <div ref={bottomRef} />
-
-      <div className="fixed bottom-0 left-0 w-full bg-black border-t border-gray-700 px-4 py-3 z-40">
-        <input
-          type="text"
-          value={userText}
-          onChange={(e) => setUserText(e.target.value)}
-          placeholder="Type a message..."
-          className="w-full rounded-full p-3 bg-gray-800 text-white placeholder-gray-400 border border-gray-600"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && userText.trim()) {
-              onSendMessage(userText.trim());
-            }
-          }}
-        />
-      </div>
     </div>
   );
-};
-
-export default Transcript;
+}
