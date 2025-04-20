@@ -105,34 +105,19 @@ function App() {
     setSessionStatus("DISCONNECTED");
   };
 
+  const sendSimulatedUserMessage = (text: string) => {
+    const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
+    addTranscriptMessage(id, "user", text, true);
+    sendClientEvent({
+      type: "conversation.item.create",
+      item: { id, type: "message", role: "user", content: [{ type: "input_text", text }] },
+    });
+    sendClientEvent({ type: "response.create" });
+    setUserText("");
+  };
+
   const onOrbClick = () =>
     sessionStatus === "DISCONNECTED" ? connectToRealtime() : disconnectFromRealtime();
-
-   const sendSimulatedUserMessage = (text: string) => {
-  const id = crypto?.randomUUID?.() || Math.random().toString(36).substring(2, 10);
-  addTranscriptMessage(id, "user", text, true);
-
-  // Send the message to the server
-  sendClientEvent({
-    type: "conversation.item.create",
-    item: {
-      id,
-      type: "message",
-      role: "user",
-      content: [{ type: "input_text", text }],
-    },
-  });
-
-  // Simulate end of user's turn like voice does
-  sendClientEvent({
-    type: "turn.marker",
-    marker: "user_end",
-  });
-
-  sendClientEvent({ type: "response.create" });
-  setUserText("");
-};
-
 
   const handleFormSuccess = () => {
     setShowShareModal(false);
@@ -143,9 +128,10 @@ function App() {
     connectToRealtime();
   };
 
-   useEffect(() => {
-  const start = async () => {
-    await connectToRealtime();
+  useEffect(() => {
+    const start = async () => {
+      await connectToRealtime();
+
       const waitForConnection = () =>
         new Promise<void>((resolve) => {
           const interval = setInterval(() => {
@@ -171,12 +157,10 @@ function App() {
       }, 1000);
     };
 
-    start(); // <-- ✅ This should be a function call, not a reference
-   }, []);
-
+    start();
+  }, []);
 
   return (
-  
     <div className="min-h-screen bg-black text-white flex flex-col relative pb-24">
       <header className="flex flex-col sm:flex-row items-center justify-between px-4 pt-4">
         <div className="flex items-center gap-3">
@@ -208,44 +192,18 @@ function App() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4">
-        <Transcript />
+        <Transcript
+          userText={userText}
+          setUserText={setUserText}
+          onSendMessage={sendSimulatedUserMessage}
+        />
       </div>
-
-      {!showShareModal && (
-        <div className="fixed bottom-0 left-0 w-full bg-black border-t border-gray-700 px-4 py-3 z-40">
-          <input
-            type="text"
-            value={userText}
-            onChange={(e) => setUserText(e.target.value)}
-            placeholder="Type a message..."
-            className="w-full rounded-full p-3 bg-gray-800 text-white placeholder-gray-400 border border-gray-600"
-            onKeyDown={(e) => e.key === "Enter" && userText.trim() && sendSimulatedUserMessage(userText)}
-          />
-        </div>
-      )}
 
       {showShareModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/80 z-50">
           <EndSessionForm onSubmitSuccess={handleFormSuccess} />
         </div>
       )}
-
-      <style jsx global>{`
-        .copy-button {
-          background: linear-gradient(90deg, #6EE7B7, #3B82F6);
-          color: white;
-          border-radius: 9999px;
-          padding: 0.5rem 1rem;
-          font-weight: 600;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-          border: none;
-          cursor: pointer;
-          transition: transform 0.15s ease-in-out;
-        }
-        .copy-button:hover {
-          transform: scale(1.05);
-        }
-      `}</style>
     </div>
   );
 }
